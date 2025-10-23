@@ -53,9 +53,9 @@ dev = [
 bedrock-benchmark = "bedrock_benchmark.cli:cli"
 
 [project.urls]
-Homepage = "https://github.com/example/bedrock-benchmark-toolkit"
-Repository = "https://github.com/example/bedrock-benchmark-toolkit"
-Issues = "https://github.com/example/bedrock-benchmark-toolkit/issues"
+Homepage = "https://github.com/alar0330/bedrock-bencher"
+Repository = "https://github.com/alar0330/bedrock-bencher"
+Issues = "https://github.com/alar0330/bedrock-bencher/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]

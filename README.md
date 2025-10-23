@@ -20,8 +20,8 @@ A minimalistic and lightweight toolkit for benchmarking different Large Language
 
 ```bash
 # Clone the repository
-git clone https://github.com/example/bedrock-benchmark-toolkit.git
-cd bedrock-benchmark-toolkit
+git clone https://github.com/alar0330/bedrock-bencher.git
+cd bedrock-bencher
 
 # Install in development mode
 pip install -e .
@@ -405,8 +405,8 @@ bedrock-benchmark --log-level DEBUG \
 
 ```bash
 # Clone and install in development mode
-git clone https://github.com/example/bedrock-benchmark-toolkit.git
-cd bedrock-benchmark-toolkit
+git clone https://github.com/alar0330/bedrock-bencher.git
+cd bedrock-bencher
 pip install -e ".[dev]"
 
 # Install pre-commit hooks
@@ -446,7 +446,7 @@ mypy src/
 ### Project Structure
 
 ```
-bedrock-benchmark-toolkit/
+bedrock-bencher/
 ├── src/bedrock_benchmark/          # Main package
 │   ├── __init__.py
 │   ├── cli.py                      # Command-line interface
@@ -482,6 +482,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/example/bedrock-benchmark-toolkit/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/example/bedrock-benchmark-toolkit/discussions)
-- **Documentation**: [Wiki](https://github.com/example/bedrock-benchmark-toolkit/wiki)
+- **Issues**: [GitHub Issues](https://github.com/alar0330/bedrock-bencher/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/alar0330/bedrock-bencher/discussions)
+- **Documentation**: [Wiki](https://github.com/alar0330/bedrock-bencher/wiki)
