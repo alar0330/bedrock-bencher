@@ -60,6 +60,7 @@ class BedrockClient:
             self.backoff_handler = BackoffHandler()
         
         self._client = None
+        self._client_context = None
     
     async def __aenter__(self):
         """Async context manager entry."""
@@ -68,17 +69,19 @@ class BedrockClient:
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Async context manager exit."""
-        if self._client:
-            await self._client.__aexit__(exc_type, exc_val, exc_tb)
+        if self._client_context:
+            await self._client_context.__aexit__(exc_type, exc_val, exc_tb)
     
     async def _ensure_client(self):
         """Ensure the Bedrock client is initialized."""
         if not self._client:
-            self._client = self.session.client(
+            client_context = self.session.client(
                 'bedrock-runtime',
                 region_name=self.region
             )
-            await self._client.__aenter__()
+            self._client = await client_context.__aenter__()
+            # Store the context for cleanup
+            self._client_context = client_context
     
     async def invoke_model(
         self,
