@@ -170,7 +170,7 @@ class BedrockClient:
             input_tokens = usage.get("inputTokens", 0)
             output_tokens = usage.get("outputTokens", 0)
             
-            finish_reason = output.get("message", {}).get("stopReason", "unknown")
+            finish_reason = response.get("stopReason", "unknown")
             
             return BedrockResponse(
                 item_id=item_id,
