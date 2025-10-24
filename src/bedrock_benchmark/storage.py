@@ -4,6 +4,7 @@ Storage management for experiments and runs.
 
 import json
 import os
+import re
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -11,6 +12,41 @@ from typing import Dict, List, Optional, Any
 import pandas as pd
 
 from .models import ExperimentMetadata, RunConfig, BedrockResponse, BenchmarkItem
+
+
+def make_path_safe(name: str, max_length: int = 30) -> str:
+    """Convert name to filesystem-safe string."""
+    if not name:
+        return "unnamed"
+    
+    # Convert to lowercase and replace spaces/special chars with hyphens
+    safe_name = re.sub(r'[^\w\s-]', '', name.lower())
+    safe_name = re.sub(r'[\s_]+', '-', safe_name)
+    safe_name = safe_name.strip('-')
+    
+    # Truncate if too long
+    if len(safe_name) > max_length:
+        safe_name = safe_name[:max_length].rstrip('-')
+    
+    return safe_name or "unnamed"
+
+
+def generate_timestamp() -> str:
+    """Generate compact timestamp: YYYYMMDD-HHMMSS."""
+    return datetime.now().strftime("%Y%m%d-%H%M%S")
+
+
+def generate_short_uuid(length: int = 4) -> str:
+    """Generate short UUID suffix."""
+    return str(uuid.uuid4()).replace('-', '')[:length]
+
+
+def create_folder_name(human_name: str) -> str:
+    """Create folder name: name_timestamp_uuid."""
+    safe_name = make_path_safe(human_name)
+    timestamp = generate_timestamp()
+    short_uuid = generate_short_uuid()
+    return f"{safe_name}_{timestamp}_{short_uuid}"
 
 
 class StorageManager:
@@ -21,9 +57,11 @@ class StorageManager:
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
     
+
+    
     def create_experiment(self, name: str, description: str = "") -> str:
-        """Create a new experiment and return its ID."""
-        experiment_id = str(uuid.uuid4())
+        """Create a new experiment and return its folder name as ID."""
+        experiment_id = create_folder_name(name)
         experiment_path = self.storage_path / experiment_id
         experiment_path.mkdir(parents=True, exist_ok=True)
         
@@ -53,13 +91,19 @@ class StorageManager:
         
         return experiment_id
     
-    def create_run(self, experiment_id: str, config: RunConfig) -> str:
-        """Create a new run within an experiment and return its ID."""
-        run_id = str(uuid.uuid4())
+    def create_run(self, experiment_id: str, config: RunConfig, run_name: str = None) -> str:
+        """Create a new run within an experiment and return its folder name as ID."""
         experiment_path = self.storage_path / experiment_id
         
         if not experiment_path.exists():
             raise ValueError(f"Experiment {experiment_id} does not exist")
+        
+        # Generate run folder name
+        if not run_name:
+            # Default to model name if no run name provided
+            run_name = config.model_id.split('.')[-1] if config.model_id else "run"
+        
+        run_id = create_folder_name(run_name)
         
         # Create run directory
         run_path = experiment_path / "runs" / run_id
@@ -338,7 +382,9 @@ class StorageManager:
         """Find the path to a run by searching through all experiments."""
         for experiment_dir in self.storage_path.iterdir():
             if experiment_dir.is_dir():
-                run_path = experiment_dir / "runs" / run_id
-                if run_path.exists():
-                    return run_path
+                runs_dir = experiment_dir / "runs"
+                if runs_dir.exists():
+                    run_path = runs_dir / run_id
+                    if run_path.exists():
+                        return run_path
         return None

@@ -105,7 +105,8 @@ class BenchmarkCore:
         experiment_id: str,
         run_config: RunConfig,
         dataset_path: Optional[str] = None,
-        resume_from_item: Optional[str] = None
+        resume_from_item: Optional[str] = None,
+        run_name: Optional[str] = None
     ) -> str:
         """
         Run a complete benchmark with the given configuration.
@@ -156,7 +157,7 @@ class BenchmarkCore:
         logger.info("Dataset loaded successfully", dataset_path=dataset_file, item_count=len(dataset_items))
         
         # Create run
-        run_id = self.storage_manager.create_run(experiment_id, run_config)
+        run_id = self.storage_manager.create_run(experiment_id, run_config, run_name)
         logger.info("Created benchmark run", run_id=run_id, experiment_id=experiment_id)
         
         # Filter items if resuming

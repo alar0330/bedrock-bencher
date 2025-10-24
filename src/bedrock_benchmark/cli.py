@@ -144,6 +144,8 @@ def cli(ctx, config: Optional[str], storage_path: Optional[str],
               help='Maximum tokens to generate')
 @click.option('--top-p', type=float, 
               help='Top-p sampling parameter')
+@click.option('--run-name', 
+              help='Human-readable name for this run (e.g., "baseline", "high-temp")')
 @click.option('--resume-from', 
               help='Item ID to resume from (for interrupted runs)')
 @click.option('--verbose', '-v', is_flag=True, 
@@ -162,6 +164,7 @@ def run_benchmark(
     temperature: Optional[float],
     max_tokens: Optional[int],
     top_p: Optional[float],
+    run_name: Optional[str],
     resume_from: Optional[str],
     verbose: bool
 ):
@@ -253,7 +256,8 @@ def run_benchmark(
             experiment_id=experiment_id,
             run_config=run_config,
             dataset_path=dataset,
-            resume_from_item=resume_from
+            resume_from_item=resume_from,
+            run_name=run_name
         ))
         
         logger.info("Benchmark completed successfully", run_id=run_id)
