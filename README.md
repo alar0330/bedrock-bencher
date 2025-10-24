@@ -8,10 +8,12 @@ A minimalistic and lightweight toolkit for benchmarking different Large Language
 - **Concurrent Processing**: Evaluate multiple prompts simultaneously for faster benchmarking
 - **Amazon Bedrock Integration**: Native support for all Bedrock models via Converse API
 - **Robust Error Handling**: Exponential backoff retry logic for API throttling and errors
-- **Hierarchical Organization**: Organize results into experiments containing multiple runs
+- **Human-Readable Organization**: Experiments and runs use descriptive folder names with timestamps
+- **Custom Run Names**: Name your benchmark runs for easy identification and comparison
 - **Data Export**: Export results to pandas DataFrames, CSV, JSON, or Parquet formats
 - **Progress Tracking**: Real-time progress reporting with detailed logging
 - **Resumable Runs**: Resume interrupted benchmarks from any point
+- **Analysis Tools**: Built-in Jupyter notebook for data exploration and visualization
 - **Flexible Configuration**: Support for configuration files and environment variables
 
 ## Installation
@@ -66,23 +68,36 @@ echo '{"prompt": "What is 2 + 2?", "expected_response": "4"}' >> my_dataset.json
 ### 2. Run Your First Benchmark
 
 ```bash
-# Run a simple benchmark
+# Run a simple benchmark with custom names
 bedrock-benchmark run-benchmark \
     --dataset my_dataset.jsonl \
     --model anthropic.claude-3-sonnet-20240229-v1:0 \
-    --experiment-name "My First Benchmark"
+    --experiment-name "My First Benchmark" \
+    --run-name "Baseline Test"
 
-# The tool will create an experiment and run, then display the run ID
+# Creates organized folders:
+# experiments/my-first-benchmark_20241024-143052_a1b2/
+#   └── runs/baseline-test_20241024-143055_x9y8/
 ```
 
 ### 3. Export Results
 
 ```bash
-# Export results to CSV (replace <run-id> with actual ID from step 2)
-bedrock-benchmark export-run <run-id> --output results.csv
+# Export results to CSV (use the run folder name as ID)
+bedrock-benchmark export-run baseline-test_20241024-143055_x9y8 --output results.csv
 
 # View the results
 head results.csv
+```
+
+### 4. Analyze Results
+
+```bash
+# Open the analysis notebook
+jupyter notebook benchmark_analysis.ipynb
+
+# Or use the CLI for quick summaries
+bedrock-benchmark show-run baseline-test_20241024-143055_x9y8
 ```
 
 ## Usage Examples
@@ -92,14 +107,18 @@ head results.csv
 #### Single Model Evaluation
 
 ```bash
-# Run benchmark with specific model parameters
+# Run benchmark with specific model parameters and custom run name
 bedrock-benchmark run-benchmark \
     --dataset examples/coding_tasks.jsonl \
     --model anthropic.claude-3-sonnet-20240229-v1:0 \
     --temperature 0.7 \
     --max-tokens 1000 \
     --system-prompt "You are a helpful coding assistant." \
-    --experiment-name "Coding Tasks Evaluation"
+    --experiment-name "Coding Tasks Evaluation" \
+    --run-name "High Temperature"
+
+# Creates: experiments/coding-tasks-evaluation_20241024-143052_a1b2/
+#          └── runs/high-temperature_20241024-143055_x9y8/
 ```
 
 #### Multi-Model Comparison
@@ -109,19 +128,21 @@ bedrock-benchmark run-benchmark \
 bedrock-benchmark create-experiment "Model Comparison" \
     --description "Comparing Claude models on reasoning tasks"
 
-# Run multiple models on the same dataset
+# Run multiple models on the same dataset with descriptive names
 bedrock-benchmark run-benchmark \
     --dataset examples/reasoning_tasks.jsonl \
     --model anthropic.claude-3-sonnet-20240229-v1:0 \
-    --experiment "Model Comparison"
+    --experiment "Model Comparison" \
+    --run-name "Claude Sonnet"
 
 bedrock-benchmark run-benchmark \
     --dataset examples/reasoning_tasks.jsonl \
     --model anthropic.claude-3-haiku-20240307-v1:0 \
-    --experiment "Model Comparison"
+    --experiment "Model Comparison" \
+    --run-name "Claude Haiku"
 
-# Compare results
-bedrock-benchmark compare-runs <run-id-1> <run-id-2> --output comparison.csv
+# Compare results using the readable run names
+bedrock-benchmark compare-runs claude-sonnet_20241024-143055_x9y8 claude-haiku_20241024-143155_m5n4 --output comparison.csv
 ```
 
 #### Advanced Configuration
@@ -147,38 +168,115 @@ bedrock-benchmark --config config.yaml run-benchmark \
 ### Experiment Management
 
 ```bash
-# List all experiments
+# List all experiments (shows human-readable folder names)
 bedrock-benchmark list-experiments
 
-# List runs in an experiment
-bedrock-benchmark list-runs <experiment-id>
+# List runs in an experiment (use experiment folder name)
+bedrock-benchmark list-runs qa-baseline_20241024-143052_a1b2
 
-# Show detailed run information
-bedrock-benchmark show-run <run-id>
+# Show detailed run information (use run folder name)
+bedrock-benchmark show-run claude-sonnet_20241024-143055_x9y8
 
 # Resume an interrupted run
 bedrock-benchmark run-benchmark \
     --dataset examples/large_dataset.jsonl \
     --model anthropic.claude-3-sonnet-20240229-v1:0 \
+    --run-name "Large Dataset Test" \
     --resume-from "item_123"
 ```
 
 ### Data Export and Analysis
 
 ```bash
-# Export single run to different formats
-bedrock-benchmark export-run <run-id> --format csv --output results.csv
-bedrock-benchmark export-run <run-id> --format json --output results.json
-bedrock-benchmark export-run <run-id> --format parquet --output results.parquet
+# Export single run to different formats (use readable run names)
+bedrock-benchmark export-run claude-sonnet_20241024-143055_x9y8 --format csv --output results.csv
+bedrock-benchmark export-run claude-sonnet_20241024-143055_x9y8 --format json --output results.json
+bedrock-benchmark export-run claude-sonnet_20241024-143055_x9y8 --format parquet --output results.parquet
 
 # Export with original dataset for complete analysis
-bedrock-benchmark export-run <run-id> \
+bedrock-benchmark export-run claude-sonnet_20241024-143055_x9y8 \
     --dataset examples/coding_tasks.jsonl \
     --output complete_results.csv
 
-# Compare multiple runs
-bedrock-benchmark compare-runs <run-id-1> <run-id-2> <run-id-3> \
+# Compare multiple runs using readable names
+bedrock-benchmark compare-runs \
+    claude-sonnet_20241024-143055_x9y8 \
+    claude-haiku_20241024-144312_m5n4 \
+    gpt4_20241024-145000_p3q2 \
     --output multi_model_comparison.csv
+```
+
+## Folder Structure and Organization
+
+The toolkit uses human-readable folder names that include timestamps for easy navigation and chronological sorting:
+
+### Folder Naming Convention
+
+```
+experiments/
+├── qa-baseline_20241024-143052_a1b2/              # experiment-name_timestamp_uuid
+│   ├── metadata.json                              # Experiment details
+│   └── runs/
+│       ├── claude-sonnet_20241024-143055_x9y8/    # run-name_timestamp_uuid
+│       │   ├── config.json                        # Run configuration
+│       │   └── responses.jsonl                    # Benchmark results
+│       └── claude-haiku_20241024-144312_m5n4/
+└── creative-writing_20241024-150000_e5f6/
+    └── runs/
+        └── baseline-run_20241024-150005_p3q2/
+```
+
+### Benefits
+
+- **Chronological Sorting**: Folders automatically sort by creation time
+- **Human Readable**: Easy to identify experiments and runs at a glance  
+- **Unique IDs**: Timestamp + UUID prevents naming conflicts
+- **File Explorer Friendly**: Navigate experiments without opening the tool
+
+### Using Folder Names as IDs
+
+The folder names serve as the experiment and run IDs throughout the toolkit:
+
+```bash
+# List experiments (shows folder names)
+bedrock-benchmark list-experiments
+
+# Export using folder name as ID
+bedrock-benchmark export-run claude-sonnet_20241024-143055_x9y8 --output results.csv
+
+# Show run details using folder name
+bedrock-benchmark show-run claude-sonnet_20241024-143055_x9y8
+```
+
+## Analysis and Visualization
+
+### Built-in Analysis Notebook
+
+The toolkit includes a Jupyter notebook for interactive data analysis:
+
+```bash
+# Start Jupyter and open the analysis notebook
+jupyter notebook benchmark_analysis.ipynb
+```
+
+The notebook provides:
+- **Experiment and run listing** with human-readable names
+- **Single run analysis** with latency and token usage statistics
+- **Multi-run comparison** with side-by-side performance metrics
+- **Visualizations** including histograms, scatter plots, and box plots
+- **Data export** to CSV for further analysis
+
+### Quick CLI Analysis
+
+```bash
+# Show run summary
+bedrock-benchmark show-run claude-sonnet_20241024-143055_x9y8
+
+# List all runs in an experiment  
+bedrock-benchmark list-runs qa-baseline_20241024-143052_a1b2
+
+# Export and compare multiple runs
+bedrock-benchmark compare-runs run1_timestamp_uuid run2_timestamp_uuid --output comparison.csv
 ```
 
 ## DataFrame Export Format
@@ -305,8 +403,18 @@ bedrock-benchmark --storage-path ./custom_experiments \
                   --region us-west-2 \
                   --max-concurrent 5 \
                   --dataset examples/simple_qa.jsonl \
-                  --model anthropic.claude-3-sonnet-20240229-v1:0
+                  --model anthropic.claude-3-sonnet-20240229-v1:0 \
+                  --experiment-name "Custom Test" \
+                  --run-name "Debug Run"
 ```
+
+### Key CLI Options
+
+- `--experiment-name`: Human-readable name for the experiment (creates folder: `name_timestamp_uuid`)
+- `--run-name`: Human-readable name for the run (creates folder: `name_timestamp_uuid`)  
+- `--resume-from`: Resume interrupted runs from a specific item ID
+- `--system-prompt`: Custom system prompt for the model
+- `--temperature`, `--max-tokens`, `--top-p`: Model parameters
 
 ## Sample Datasets
 
