@@ -352,6 +352,7 @@ class BenchmarkCore:
             try:
                 dataset_loader = DatasetLoader()
                 dataset_items = dataset_loader.load_dataset(dataset_path)
+                print(dataset_items[:5])
             except Exception as e:
                 logger.warning(f"Could not load dataset for export: {e}")
         

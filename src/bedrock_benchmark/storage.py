@@ -49,6 +49,11 @@ def create_folder_name(human_name: str) -> str:
     return f"{safe_name}_{timestamp}_{short_uuid}"
 
 
+def create_experiment_folder_name(human_name: str) -> str:
+    """Create experiment folder name: just the path-safe name (no timestamp/uuid)."""
+    return make_path_safe(human_name)
+
+
 class StorageManager:
     """Manages hierarchical storage of experiments and runs."""
     
@@ -60,9 +65,16 @@ class StorageManager:
 
     
     def create_experiment(self, name: str, description: str = "") -> str:
-        """Create a new experiment and return its folder name as ID."""
-        experiment_id = create_folder_name(name)
+        """Create a new experiment or reuse existing one. Return folder name as ID."""
+        experiment_id = create_experiment_folder_name(name)
         experiment_path = self.storage_path / experiment_id
+        
+        # Check if experiment already exists
+        if experiment_path.exists():
+            # Experiment exists, return existing ID for reuse
+            return experiment_id
+        
+        # Create new experiment
         experiment_path.mkdir(parents=True, exist_ok=True)
         
         # Create runs directory
@@ -363,7 +375,8 @@ class StorageManager:
         avg_latency = sum(r.latency_ms for r in responses) / total_responses
         total_input_tokens = sum(r.input_tokens for r in responses)
         total_output_tokens = sum(r.output_tokens for r in responses)
-        successful_responses = sum(1 for r in responses if r.finish_reason == 'stop')
+        # Count successful responses (both 'stop' and 'end_turn' are successful completions)
+        successful_responses = sum(1 for r in responses if r.finish_reason in ['stop', 'end_turn'])
         success_rate = successful_responses / total_responses if total_responses > 0 else 0.0
         
         return {

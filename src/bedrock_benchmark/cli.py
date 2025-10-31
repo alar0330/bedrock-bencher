@@ -193,13 +193,19 @@ def run_benchmark(
         experiment_id = experiment
         click.echo(f"Using existing experiment: {experiment_metadata.name} ({experiment_id})")
     else:
-        # Create new experiment
+        # Create or reuse experiment
         exp_name = experiment_name or f"Benchmark {model}"
         exp_desc = experiment_description or f"Benchmarking {model} on {Path(dataset).name}"
         
         benchmark_core = BenchmarkCore(storage_manager)
         experiment_id = benchmark_core.create_experiment(exp_name, exp_desc)
-        click.echo(f"Created new experiment: {exp_name} ({experiment_id})")
+        
+        # Check if experiment already existed
+        experiment_metadata = storage_manager.get_experiment_metadata(experiment_id)
+        if experiment_metadata and len(experiment_metadata.runs) > 0:
+            click.echo(f"Using existing experiment: {exp_name} ({experiment_id}) - {len(experiment_metadata.runs)} existing runs")
+        else:
+            click.echo(f"Created new experiment: {exp_name} ({experiment_id})")
     
     # Build model parameters
     model_params = {}
