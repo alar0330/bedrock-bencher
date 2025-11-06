@@ -261,14 +261,19 @@ class BenchmarkCore:
                     # Save response immediately
                     self.storage_manager.save_response(run_id, response)
                     
-                    # Update progress
-                    progress.update(completed=1)
+                    # Update progress based on response quality
+                    if response.finish_reason in ['stop', 'end_turn']:
+                        progress.update(completed=1)
+                        logger.debug(f"Completed item {item.id} successfully")
+                    else:
+                        # API succeeded but response didn't complete successfully
+                        progress.update(failed=1)
+                        logger.debug(f"Item {item.id} completed with finish_reason: {response.finish_reason}")
                     
                     # Report progress if callback is provided
                     if self.progress_callback:
                         self.progress_callback(progress)
                     
-                    logger.debug(f"Completed item {item.id}")
                     return response
                     
                 except Exception as e:
