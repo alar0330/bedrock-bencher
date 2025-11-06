@@ -346,7 +346,7 @@ class StorageManager:
                 'total_input_tokens': 0,
                 'total_output_tokens': 0,
                 'success_rate': 0.0,
-                'avg_rps': 0.0,
+                'avg_rpm': 0.0,
                 'finish_reason_counts': {}
             }
         
@@ -366,7 +366,7 @@ class StorageManager:
             reason = response.finish_reason
             finish_reason_counts[reason] = finish_reason_counts.get(reason, 0) + 1
         
-        # Calculate RPS (Requests Per Second) - simple approach
+        # Calculate RPM (Requests Per Minute) - simple approach
         if total_responses > 1:
             from datetime import datetime
             
@@ -379,11 +379,11 @@ class StorageManager:
                     ts = r.timestamp
                 timestamps.append(ts)
             
-            # Simple calculation: total_items / elapsed_time
+            # Simple calculation: total_items / elapsed_time * 60 (convert to per minute)
             elapsed_seconds = (max(timestamps) - min(timestamps)).total_seconds()
-            rps = total_responses / elapsed_seconds if elapsed_seconds > 0 else 0.0
+            rpm = (total_responses / elapsed_seconds * 60) if elapsed_seconds > 0 else 0.0
         else:
-            rps = 0.0
+            rpm = 0.0
         
         return {
             'run_id': run_id,
@@ -394,7 +394,7 @@ class StorageManager:
             'total_input_tokens': total_input_tokens,
             'total_output_tokens': total_output_tokens,
             'success_rate': round(success_rate, 3),
-            'avg_rps': round(rps, 2),
+            'avg_rpm': round(rpm, 2),
             'finish_reason_counts': finish_reason_counts,
             'created_at': responses[0].timestamp if responses else None
         }
