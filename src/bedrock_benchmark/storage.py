@@ -86,8 +86,7 @@ class StorageManager:
             id=experiment_id,
             name=name,
             description=description,
-            created_at=datetime.now(),
-            runs=[]
+            created_at=datetime.now()
         )
         
         # Save metadata
@@ -97,8 +96,7 @@ class StorageManager:
                 'id': metadata.id,
                 'name': metadata.name,
                 'description': metadata.description,
-                'created_at': metadata.created_at.isoformat(),
-                'runs': metadata.runs
+                'created_at': metadata.created_at.isoformat()
             }, f, indent=2)
         
         return experiment_id
@@ -136,9 +134,6 @@ class StorageManager:
         # Create empty responses file
         responses_path = run_path / "responses.jsonl"
         responses_path.touch()
-        
-        # Update experiment metadata to include this run
-        self._add_run_to_experiment(experiment_id, run_id)
         
         return run_id
     
@@ -211,8 +206,7 @@ class StorageManager:
                 id=data['id'],
                 name=data['name'],
                 description=data['description'],
-                created_at=datetime.fromisoformat(data['created_at']),
-                runs=data['runs']
+                created_at=datetime.fromisoformat(data['created_at'])
             )
     
     def get_run_config(self, run_id: str) -> Optional[RunConfig]:
@@ -255,23 +249,7 @@ class StorageManager:
         
         return [run_dir.name for run_dir in runs_path.iterdir() if run_dir.is_dir()]
     
-    def _add_run_to_experiment(self, experiment_id: str, run_id: str) -> None:
-        """Add a run ID to the experiment's metadata."""
-        metadata = self.get_experiment_metadata(experiment_id)
-        if metadata:
-            metadata.runs.append(run_id)
-            
-            # Save updated metadata
-            experiment_path = self.storage_path / experiment_id
-            metadata_path = experiment_path / "metadata.json"
-            with open(metadata_path, 'w') as f:
-                json.dump({
-                    'id': metadata.id,
-                    'name': metadata.name,
-                    'description': metadata.description,
-                    'created_at': metadata.created_at.isoformat(),
-                    'runs': metadata.runs
-                }, f, indent=2)
+
     
     def export_run_to_dataframe(self, run_id: str, dataset_items: Optional[List[BenchmarkItem]] = None) -> pd.DataFrame:
         """Export run results to a pandas DataFrame with proper column mapping."""
@@ -388,29 +366,22 @@ class StorageManager:
             reason = response.finish_reason
             finish_reason_counts[reason] = finish_reason_counts.get(reason, 0) + 1
         
-        # Calculate RPS (Requests Per Second)
+        # Calculate RPS (Requests Per Second) - simple approach
         if total_responses > 1:
-            # Get time span from first to last response
-            timestamps = [r.timestamp for r in responses]
-            first_time = min(timestamps)
-            last_time = max(timestamps)
-            
-            # Calculate duration in seconds
             from datetime import datetime
-            if isinstance(first_time, str):
-                first_dt = datetime.fromisoformat(first_time.replace('Z', '+00:00'))
-                last_dt = datetime.fromisoformat(last_time.replace('Z', '+00:00'))
-            else:
-                first_dt = first_time
-                last_dt = last_time
             
-            duration_seconds = (last_dt - first_dt).total_seconds()
+            # Parse timestamps and find elapsed time
+            timestamps = []
+            for r in responses:
+                if isinstance(r.timestamp, str):
+                    ts = datetime.fromisoformat(r.timestamp.replace('Z', '+00:00'))
+                else:
+                    ts = r.timestamp
+                timestamps.append(ts)
             
-            # Calculate RPS (avoid division by zero)
-            if duration_seconds > 0:
-                rps = total_responses / duration_seconds
-            else:
-                rps = 0.0
+            # Simple calculation: total_items / elapsed_time
+            elapsed_seconds = (max(timestamps) - min(timestamps)).total_seconds()
+            rps = total_responses / elapsed_seconds if elapsed_seconds > 0 else 0.0
         else:
             rps = 0.0
         

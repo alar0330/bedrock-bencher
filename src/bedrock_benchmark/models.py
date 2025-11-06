@@ -42,9 +42,8 @@ class RunConfig:
 
 @dataclass
 class ExperimentMetadata:
-    """Metadata for a benchmark experiment containing multiple runs."""
+    """Metadata for a benchmark experiment."""
     id: str
     name: str
     description: str
     created_at: datetime
-    runs: List[str] = field(default_factory=list)
