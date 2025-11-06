@@ -76,7 +76,7 @@ bedrock-benchmark run-benchmark \
     --run-name "Baseline Test"
 
 # Creates organized folders:
-# experiments/my-first-benchmark_20241024-143052_a1b2/
+# experiments/my-first-benchmark/
 #   └── runs/baseline-test_20241024-143055_x9y8/
 ```
 
@@ -117,18 +117,19 @@ bedrock-benchmark run-benchmark \
     --experiment-name "Coding Tasks Evaluation" \
     --run-name "High Temperature"
 
-# Creates: experiments/coding-tasks-evaluation_20241024-143052_a1b2/
+# Creates: experiments/coding-tasks-evaluation/
 #          └── runs/high-temperature_20241024-143055_x9y8/
 ```
 
 #### Multi-Model Comparison
 
 ```bash
-# Create an experiment for comparison
+# Create an experiment for comparison (or reuse existing one)
 bedrock-benchmark create-experiment "Model Comparison" \
     --description "Comparing Claude models on reasoning tasks"
 
 # Run multiple models on the same dataset with descriptive names
+# These will be added to the same "model-comparison" experiment folder
 bedrock-benchmark run-benchmark \
     --dataset examples/reasoning_tasks.jsonl \
     --model anthropic.claude-3-sonnet-20240229-v1:0 \
@@ -172,7 +173,7 @@ bedrock-benchmark --config config.yaml run-benchmark \
 bedrock-benchmark list-experiments
 
 # List runs in an experiment (use experiment folder name)
-bedrock-benchmark list-runs qa-baseline_20241024-143052_a1b2
+bedrock-benchmark list-runs qa-baseline
 
 # Show detailed run information (use run folder name)
 bedrock-benchmark show-run claude-sonnet_20241024-143055_x9y8
@@ -208,29 +209,30 @@ bedrock-benchmark compare-runs \
 
 ## Folder Structure and Organization
 
-The toolkit uses human-readable folder names that include timestamps for easy navigation and chronological sorting:
+The toolkit uses a hierarchical folder structure with human-readable experiment names and timestamped runs for easy navigation and organization:
 
 ### Folder Naming Convention
 
 ```
 experiments/
-├── qa-baseline_20241024-143052_a1b2/              # experiment-name_timestamp_uuid
+├── qa-baseline/                                    # experiment-name (path-safe, reusable)
 │   ├── metadata.json                              # Experiment details
 │   └── runs/
 │       ├── claude-sonnet_20241024-143055_x9y8/    # run-name_timestamp_uuid
 │       │   ├── config.json                        # Run configuration
 │       │   └── responses.jsonl                    # Benchmark results
 │       └── claude-haiku_20241024-144312_m5n4/
-└── creative-writing_20241024-150000_e5f6/
+└── creative-writing/
     └── runs/
         └── baseline-run_20241024-150005_p3q2/
 ```
 
 ### Benefits
 
-- **Chronological Sorting**: Folders automatically sort by creation time
+- **Experiment Reuse**: Experiments use simple names and can be reused for multiple runs
+- **Chronological Run Sorting**: Run folders automatically sort by creation time
 - **Human Readable**: Easy to identify experiments and runs at a glance  
-- **Unique IDs**: Timestamp + UUID prevents naming conflicts
+- **Unique Run IDs**: Timestamp + UUID prevents run naming conflicts
 - **File Explorer Friendly**: Navigate experiments without opening the tool
 
 ### Using Folder Names as IDs
@@ -241,12 +243,19 @@ The folder names serve as the experiment and run IDs throughout the toolkit:
 # List experiments (shows folder names)
 bedrock-benchmark list-experiments
 
-# Export using folder name as ID
+# Export using run folder name as ID
 bedrock-benchmark export-run claude-sonnet_20241024-143055_x9y8 --output results.csv
 
-# Show run details using folder name
+# Show run details using run folder name
 bedrock-benchmark show-run claude-sonnet_20241024-143055_x9y8
+
+# List runs in an experiment using experiment folder name
+bedrock-benchmark list-runs model-comparison
 ```
+
+### Experiment Reuse
+
+When you specify an experiment name that already exists, the toolkit will reuse the existing experiment folder and add new runs to it. This allows you to group related benchmark runs under the same experiment without creating duplicate experiment folders.
 
 ## Analysis and Visualization
 
@@ -273,7 +282,7 @@ The notebook provides:
 bedrock-benchmark show-run claude-sonnet_20241024-143055_x9y8
 
 # List all runs in an experiment  
-bedrock-benchmark list-runs qa-baseline_20241024-143052_a1b2
+bedrock-benchmark list-runs qa-baseline
 
 # Export and compare multiple runs
 bedrock-benchmark compare-runs run1_timestamp_uuid run2_timestamp_uuid --output comparison.csv
@@ -410,7 +419,7 @@ bedrock-benchmark --storage-path ./custom_experiments \
 
 ### Key CLI Options
 
-- `--experiment-name`: Human-readable name for the experiment (creates folder: `name_timestamp_uuid`)
+- `--experiment-name`: Human-readable name for the experiment (creates reusable folder with path-safe name)
 - `--run-name`: Human-readable name for the run (creates folder: `name_timestamp_uuid`)  
 - `--resume-from`: Resume interrupted runs from a specific item ID
 - `--system-prompt`: Custom system prompt for the model
