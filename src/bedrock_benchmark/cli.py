@@ -258,9 +258,6 @@ def run_benchmark(
     
     # Run the benchmark
     try:
-        # Set AWS region environment variable
-        os.environ['AWS_DEFAULT_REGION'] = aws_region
-        
         run_id = asyncio.run(benchmark_core.run_benchmark(
             experiment_id=experiment_id,
             run_config=run_config,
