@@ -5,7 +5,7 @@ Exponential backoff error handling with jitter for AWS Bedrock API calls.
 import asyncio
 import random
 import logging
-from typing import Callable, Any, Optional, Type, Union
+from typing import Callable, Any, Optional
 from botocore.exceptions import ClientError
 
 
@@ -208,97 +208,3 @@ class BackoffHandler:
             return 'unknown_error'
 
 
-class CircuitBreaker:
-    """
-    Circuit breaker pattern to prevent cascading failures.
-    
-    Stops making requests after a threshold of consecutive failures
-    and allows recovery after a timeout period.
-    """
-    
-    def __init__(
-        self,
-        failure_threshold: int = 5,
-        recovery_timeout: float = 60.0,
-        expected_exception: Type[Exception] = Exception
-    ):
-        """
-        Initialize the circuit breaker.
-        
-        Args:
-            failure_threshold: Number of consecutive failures before opening
-            recovery_timeout: Time to wait before attempting recovery
-            expected_exception: Exception type to monitor
-        """
-        self.failure_threshold = failure_threshold
-        self.recovery_timeout = recovery_timeout
-        self.expected_exception = expected_exception
-        
-        self.failure_count = 0
-        self.last_failure_time: Optional[float] = None
-        self.state = 'closed'  # closed, open, half_open
-    
-    def can_execute(self) -> bool:
-        """Check if execution is allowed based on circuit breaker state."""
-        if self.state == 'closed':
-            return True
-        
-        if self.state == 'open':
-            # Check if recovery timeout has passed
-            if (self.last_failure_time and 
-                asyncio.get_event_loop().time() - self.last_failure_time >= self.recovery_timeout):
-                self.state = 'half_open'
-                return True
-            return False
-        
-        if self.state == 'half_open':
-            return True
-        
-        return False
-    
-    def record_success(self):
-        """Record a successful execution."""
-        self.failure_count = 0
-        self.state = 'closed'
-    
-    def record_failure(self):
-        """Record a failed execution."""
-        self.failure_count += 1
-        self.last_failure_time = asyncio.get_event_loop().time()
-        
-        if self.failure_count >= self.failure_threshold:
-            self.state = 'open'
-        elif self.state == 'half_open':
-            self.state = 'open'
-    
-    async def execute(self, func: Callable, *args, **kwargs) -> Any:
-        """
-        Execute a function with circuit breaker protection.
-        
-        Args:
-            func: The function to execute
-            *args: Positional arguments
-            **kwargs: Keyword arguments
-            
-        Returns:
-            Function result
-            
-        Raises:
-            RuntimeError: If circuit breaker is open
-            Exception: Any exception from the function
-        """
-        if not self.can_execute():
-            raise RuntimeError("Circuit breaker is open")
-        
-        try:
-            if asyncio.iscoroutinefunction(func):
-                result = await func(*args, **kwargs)
-            else:
-                result = func(*args, **kwargs)
-            
-            self.record_success()
-            return result
-            
-        except self.expected_exception as e:
-            self.record_failure()
-            raise e
