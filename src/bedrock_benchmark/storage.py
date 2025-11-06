@@ -367,7 +367,8 @@ class StorageManager:
                 'avg_latency_ms': 0,
                 'total_input_tokens': 0,
                 'total_output_tokens': 0,
-                'success_rate': 0.0
+                'success_rate': 0.0,
+                'finish_reason_counts': {}
             }
         
         # Calculate summary statistics
@@ -375,9 +376,16 @@ class StorageManager:
         avg_latency = sum(r.latency_ms for r in responses) / total_responses
         total_input_tokens = sum(r.input_tokens for r in responses)
         total_output_tokens = sum(r.output_tokens for r in responses)
+        
         # Count successful responses (both 'stop' and 'end_turn' are successful completions)
         successful_responses = sum(1 for r in responses if r.finish_reason in ['stop', 'end_turn'])
         success_rate = successful_responses / total_responses if total_responses > 0 else 0.0
+        
+        # Calculate finish_reason statistics
+        finish_reason_counts = {}
+        for response in responses:
+            reason = response.finish_reason
+            finish_reason_counts[reason] = finish_reason_counts.get(reason, 0) + 1
         
         return {
             'run_id': run_id,
@@ -388,6 +396,7 @@ class StorageManager:
             'total_input_tokens': total_input_tokens,
             'total_output_tokens': total_output_tokens,
             'success_rate': round(success_rate, 3),
+            'finish_reason_counts': finish_reason_counts,
             'created_at': responses[0].timestamp if responses else None
         }
     
