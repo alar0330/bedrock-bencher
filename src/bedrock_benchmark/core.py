@@ -106,7 +106,8 @@ class BenchmarkCore:
         run_config: RunConfig,
         dataset_path: Optional[str] = None,
         resume_from_item: Optional[str] = None,
-        run_name: Optional[str] = None
+        run_name: Optional[str] = None,
+        region: Optional[str] = None
     ) -> str:
         """
         Run a complete benchmark with the given configuration.
@@ -116,6 +117,8 @@ class BenchmarkCore:
             run_config: Configuration for this benchmark run
             dataset_path: Path to dataset file (overrides run_config.dataset_path if provided)
             resume_from_item: Item ID to resume from (for interrupted runs)
+            run_name: Human-readable name for this run
+            region: AWS region for Bedrock service (defaults to us-east-1)
         
         Returns:
             Run ID of the completed benchmark
@@ -191,6 +194,7 @@ class BenchmarkCore:
         try:
             async with BedrockClient(
                 model_id=run_config.model_id,
+                region=region or "us-east-1",
                 backoff_handler=backoff_handler
             ) as client:
                 

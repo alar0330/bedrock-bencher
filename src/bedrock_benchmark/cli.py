@@ -266,7 +266,8 @@ def run_benchmark(
             run_config=run_config,
             dataset_path=dataset,
             resume_from_item=resume_from,
-            run_name=run_name
+            run_name=run_name,
+            region=aws_region
         ))
         
         logger.info("Benchmark completed successfully", run_id=run_id)
