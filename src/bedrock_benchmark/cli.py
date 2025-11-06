@@ -65,7 +65,7 @@ def setup_progress_callback(verbose: bool = False, progress_logger=None, log_str
 
 
 @click.group()
-@click.version_option()
+@click.version_option(package_name="bedrock-bencher")
 @click.option('--config', '-c', 
               help='Path to configuration file')
 @click.option('--storage-path', 
@@ -309,7 +309,7 @@ def run_benchmark(
         click.echo(f"  Total input tokens: {summary['total_input_tokens']}")
         click.echo(f"  Total output tokens: {summary['total_output_tokens']}")
         
-        click.echo(f"\nTo export results: bedrock-benchmark export-run {run_id}")
+        click.echo(f"\nTo export results: bedrock-bencher export-run {run_id}")
         
     except KeyboardInterrupt:
         logger.info("Benchmark interrupted by user")

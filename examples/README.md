@@ -53,13 +53,13 @@ Optional fields:
 
 ```bash
 # Run benchmark with simple Q&A dataset
-bedrock-benchmark run --dataset examples/simple_qa.jsonl --model anthropic.claude-3-sonnet-20240229-v1:0
+bedrock-bencher run --dataset examples/simple_qa.jsonl --model anthropic.claude-3-sonnet-20240229-v1:0
 
 # Run with metadata-rich dataset
-bedrock-benchmark run --dataset examples/comprehensive_benchmark.jsonl --model anthropic.claude-3-sonnet-20240229-v1:0
+bedrock-bencher run --dataset examples/comprehensive_benchmark.jsonl --model anthropic.claude-3-sonnet-20240229-v1:0
 
 # Create experiment with multiple datasets
-bedrock-benchmark create-experiment "Creative Writing Evaluation"
-bedrock-benchmark run --experiment-id exp_123 --dataset examples/creative_writing.jsonl --model anthropic.claude-3-sonnet-20240229-v1:0
-bedrock-benchmark run --experiment-id exp_123 --dataset examples/creative_writing.jsonl --model anthropic.claude-3-haiku-20240307-v1:0
+bedrock-bencher create-experiment "Creative Writing Evaluation"
+bedrock-bencher run --experiment-id exp_123 --dataset examples/creative_writing.jsonl --model anthropic.claude-3-sonnet-20240229-v1:0
+bedrock-bencher run --experiment-id exp_123 --dataset examples/creative_writing.jsonl --model anthropic.claude-3-haiku-20240307-v1:0
 ```

@@ -69,7 +69,7 @@ echo '{"prompt": "What is 2 + 2?", "expected_response": "4"}' >> my_dataset.json
 
 ```bash
 # Run a simple benchmark with custom names
-bedrock-benchmark run-benchmark \
+bedrock-bencher run-benchmark \
     --dataset my_dataset.jsonl \
     --model anthropic.claude-3-sonnet-20240229-v1:0 \
     --experiment-name "My First Benchmark" \
@@ -84,7 +84,7 @@ bedrock-benchmark run-benchmark \
 
 ```bash
 # Export results to CSV (use the run folder name as ID)
-bedrock-benchmark export-run baseline-test_20241024-143055_x9y8 --output results.csv
+bedrock-bencher export-run baseline-test_20241024-143055_x9y8 --output results.csv
 
 # View the results
 head results.csv
@@ -97,7 +97,7 @@ head results.csv
 jupyter notebook benchmark_analysis.ipynb
 
 # Or use the CLI for quick summaries
-bedrock-benchmark show-run baseline-test_20241024-143055_x9y8
+bedrock-bencher show-run baseline-test_20241024-143055_x9y8
 ```
 
 ## Usage Examples
@@ -108,7 +108,7 @@ bedrock-benchmark show-run baseline-test_20241024-143055_x9y8
 
 ```bash
 # Run benchmark with specific model parameters and custom run name
-bedrock-benchmark run-benchmark \
+bedrock-bencher run-benchmark \
     --dataset examples/coding_tasks.jsonl \
     --model anthropic.claude-3-sonnet-20240229-v1:0 \
     --temperature 0.7 \
@@ -125,25 +125,25 @@ bedrock-benchmark run-benchmark \
 
 ```bash
 # Create an experiment for comparison (or reuse existing one)
-bedrock-benchmark create-experiment "Model Comparison" \
+bedrock-bencher create-experiment "Model Comparison" \
     --description "Comparing Claude models on reasoning tasks"
 
 # Run multiple models on the same dataset with descriptive names
 # These will be added to the same "model-comparison" experiment folder
-bedrock-benchmark run-benchmark \
+bedrock-bencher run-benchmark \
     --dataset examples/reasoning_tasks.jsonl \
     --model anthropic.claude-3-sonnet-20240229-v1:0 \
     --experiment "Model Comparison" \
     --run-name "Claude Sonnet"
 
-bedrock-benchmark run-benchmark \
+bedrock-bencher run-benchmark \
     --dataset examples/reasoning_tasks.jsonl \
     --model anthropic.claude-3-haiku-20240307-v1:0 \
     --experiment "Model Comparison" \
     --run-name "Claude Haiku"
 
 # Compare results using the readable run names
-bedrock-benchmark compare-runs claude-sonnet_20241024-143055_x9y8 claude-haiku_20241024-143155_m5n4 --output comparison.csv
+bedrock-bencher compare-runs claude-sonnet_20241024-143055_x9y8 claude-haiku_20241024-143155_m5n4 --output comparison.csv
 ```
 
 #### Advanced Configuration
@@ -161,7 +161,7 @@ base_delay: 2.0
 EOF
 
 # Run with configuration
-bedrock-benchmark --config config.yaml run-benchmark \
+bedrock-bencher --config config.yaml run-benchmark \
     --dataset examples/comprehensive_benchmark.jsonl \
     --model anthropic.claude-3-sonnet-20240229-v1:0
 ```
@@ -170,16 +170,16 @@ bedrock-benchmark --config config.yaml run-benchmark \
 
 ```bash
 # List all experiments (shows human-readable folder names)
-bedrock-benchmark list-experiments
+bedrock-bencher list-experiments
 
 # List runs in an experiment (use experiment folder name)
-bedrock-benchmark list-runs qa-baseline
+bedrock-bencher list-runs qa-baseline
 
 # Show detailed run information (use run folder name)
-bedrock-benchmark show-run claude-sonnet_20241024-143055_x9y8
+bedrock-bencher show-run claude-sonnet_20241024-143055_x9y8
 
 # Resume an interrupted run
-bedrock-benchmark run-benchmark \
+bedrock-bencher run-benchmark \
     --dataset examples/large_dataset.jsonl \
     --model anthropic.claude-3-sonnet-20240229-v1:0 \
     --run-name "Large Dataset Test" \
@@ -190,17 +190,17 @@ bedrock-benchmark run-benchmark \
 
 ```bash
 # Export single run to different formats (use readable run names)
-bedrock-benchmark export-run claude-sonnet_20241024-143055_x9y8 --format csv --output results.csv
-bedrock-benchmark export-run claude-sonnet_20241024-143055_x9y8 --format json --output results.json
-bedrock-benchmark export-run claude-sonnet_20241024-143055_x9y8 --format parquet --output results.parquet
+bedrock-bencher export-run claude-sonnet_20241024-143055_x9y8 --format csv --output results.csv
+bedrock-bencher export-run claude-sonnet_20241024-143055_x9y8 --format json --output results.json
+bedrock-bencher export-run claude-sonnet_20241024-143055_x9y8 --format parquet --output results.parquet
 
 # Export with original dataset for complete analysis
-bedrock-benchmark export-run claude-sonnet_20241024-143055_x9y8 \
+bedrock-bencher export-run claude-sonnet_20241024-143055_x9y8 \
     --dataset examples/coding_tasks.jsonl \
     --output complete_results.csv
 
 # Compare multiple runs using readable names
-bedrock-benchmark compare-runs \
+bedrock-bencher compare-runs \
     claude-sonnet_20241024-143055_x9y8 \
     claude-haiku_20241024-144312_m5n4 \
     gpt4_20241024-145000_p3q2 \
@@ -241,16 +241,16 @@ The folder names serve as the experiment and run IDs throughout the toolkit:
 
 ```bash
 # List experiments (shows folder names)
-bedrock-benchmark list-experiments
+bedrock-bencher list-experiments
 
 # Export using run folder name as ID
-bedrock-benchmark export-run claude-sonnet_20241024-143055_x9y8 --output results.csv
+bedrock-bencher export-run claude-sonnet_20241024-143055_x9y8 --output results.csv
 
 # Show run details using run folder name
-bedrock-benchmark show-run claude-sonnet_20241024-143055_x9y8
+bedrock-bencher show-run claude-sonnet_20241024-143055_x9y8
 
 # List runs in an experiment using experiment folder name
-bedrock-benchmark list-runs model-comparison
+bedrock-bencher list-runs model-comparison
 ```
 
 ### Experiment Reuse
@@ -279,13 +279,13 @@ The notebook provides:
 
 ```bash
 # Show run summary
-bedrock-benchmark show-run claude-sonnet_20241024-143055_x9y8
+bedrock-bencher show-run claude-sonnet_20241024-143055_x9y8
 
 # List all runs in an experiment  
-bedrock-benchmark list-runs qa-baseline
+bedrock-bencher list-runs qa-baseline
 
 # Export and compare multiple runs
-bedrock-benchmark compare-runs run1_timestamp_uuid run2_timestamp_uuid --output comparison.csv
+bedrock-bencher compare-runs run1_timestamp_uuid run2_timestamp_uuid --output comparison.csv
 ```
 
 ## DataFrame Export Format
@@ -406,7 +406,7 @@ export BEDROCK_BENCHMARK_LOG_LEVEL=DEBUG
 All settings can be overridden via command line:
 
 ```bash
-bedrock-benchmark --storage-path ./custom_experiments \
+bedrock-bencher --storage-path ./custom_experiments \
                   --log-level DEBUG \
                   run-benchmark \
                   --region us-west-2 \
@@ -489,7 +489,7 @@ export AWS_SECRET_ACCESS_KEY=your_secret
 # Error: Too many requests
 # The tool automatically handles rate limiting with exponential backoff
 # You can adjust retry settings in configuration:
-bedrock-benchmark run-benchmark \
+bedrock-bencher run-benchmark \
     --max-concurrent 2 \  # Reduce concurrency
     --dataset your_dataset.jsonl \
     --model your_model
@@ -508,7 +508,7 @@ split -l 1000 large_dataset.jsonl batch_
 Enable detailed logging for troubleshooting:
 
 ```bash
-bedrock-benchmark --log-level DEBUG \
+bedrock-bencher --log-level DEBUG \
                   --log-file debug.log \
                   run-benchmark \
                   --verbose \

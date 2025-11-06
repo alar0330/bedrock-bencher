@@ -336,23 +336,23 @@ def find_config_file() -> Optional[Path]:
     Find configuration file in standard locations.
     
     Searches for configuration files in the following order:
-    1. ./bedrock-benchmark.yaml
-    2. ./bedrock-benchmark.yml
-    3. ./bedrock-benchmark.json
-    4. ~/.bedrock-benchmark.yaml
-    5. ~/.bedrock-benchmark.yml
-    6. ~/.bedrock-benchmark.json
+    1. ./bedrock-bencher.yaml
+    2. ./bedrock-bencher.yml
+    3. ./bedrock-bencher.json
+    4. ~/.bedrock-bencher.yaml
+    5. ~/.bedrock-bencher.yml
+    6. ~/.bedrock-bencher.json
     
     Returns:
         Path to configuration file or None if not found
     """
     search_paths = [
-        Path("./bedrock-benchmark.yaml"),
-        Path("./bedrock-benchmark.yml"),
-        Path("./bedrock-benchmark.json"),
-        Path("~/.bedrock-benchmark.yaml").expanduser(),
-        Path("~/.bedrock-benchmark.yml").expanduser(),
-        Path("~/.bedrock-benchmark.json").expanduser(),
+        Path("./bedrock-bencher.yaml"),
+        Path("./bedrock-bencher.yml"),
+        Path("./bedrock-bencher.json"),
+        Path("~/.bedrock-bencher.yaml").expanduser(),
+        Path("~/.bedrock-bencher.yml").expanduser(),
+        Path("~/.bedrock-bencher.json").expanduser(),
     ]
     
     for path in search_paths:

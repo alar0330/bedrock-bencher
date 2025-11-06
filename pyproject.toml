@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "bedrock-benchmark-toolkit"
-version = "0.1.0"
+name = "bedrock-bencher"
+version = "0.2.0"
 description = "A minimalistic and lightweight toolkit for benchmarking different Large Language Models (LLMs) on Amazon Bedrock"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -53,7 +53,7 @@ dev = [
 ]
 
 [project.scripts]
-bedrock-benchmark = "bedrock_benchmark.cli:cli"
+bedrock-bencher = "bedrock_benchmark.cli:cli"
 
 [project.urls]
 Homepage = "https://github.com/alar0330/bedrock-bencher"

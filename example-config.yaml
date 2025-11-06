@@ -1,5 +1,5 @@
 # Example configuration file for Bedrock Benchmark Toolkit
-# Save as bedrock-benchmark.yaml in your project directory or home directory
+# Save as bedrock-bencher.yaml in your project directory or home directory
 
 # AWS Configuration
 aws_region: "us-east-1"
