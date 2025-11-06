@@ -368,6 +368,7 @@ class StorageManager:
                 'total_input_tokens': 0,
                 'total_output_tokens': 0,
                 'success_rate': 0.0,
+                'avg_rps': 0.0,
                 'finish_reason_counts': {}
             }
         
@@ -387,6 +388,32 @@ class StorageManager:
             reason = response.finish_reason
             finish_reason_counts[reason] = finish_reason_counts.get(reason, 0) + 1
         
+        # Calculate RPS (Requests Per Second)
+        if total_responses > 1:
+            # Get time span from first to last response
+            timestamps = [r.timestamp for r in responses]
+            first_time = min(timestamps)
+            last_time = max(timestamps)
+            
+            # Calculate duration in seconds
+            from datetime import datetime
+            if isinstance(first_time, str):
+                first_dt = datetime.fromisoformat(first_time.replace('Z', '+00:00'))
+                last_dt = datetime.fromisoformat(last_time.replace('Z', '+00:00'))
+            else:
+                first_dt = first_time
+                last_dt = last_time
+            
+            duration_seconds = (last_dt - first_dt).total_seconds()
+            
+            # Calculate RPS (avoid division by zero)
+            if duration_seconds > 0:
+                rps = total_responses / duration_seconds
+            else:
+                rps = 0.0
+        else:
+            rps = 0.0
+        
         return {
             'run_id': run_id,
             'total_responses': total_responses,
@@ -396,6 +423,7 @@ class StorageManager:
             'total_input_tokens': total_input_tokens,
             'total_output_tokens': total_output_tokens,
             'success_rate': round(success_rate, 3),
+            'avg_rps': round(rps, 2),
             'finish_reason_counts': finish_reason_counts,
             'created_at': responses[0].timestamp if responses else None
         }

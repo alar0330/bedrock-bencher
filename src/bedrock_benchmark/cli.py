@@ -283,6 +283,7 @@ def run_benchmark(
             total_responses=summary['total_responses'],
             success_rate=summary['success_rate'],
             avg_latency_ms=summary['avg_latency_ms'],
+            avg_rps=summary.get('avg_rps', 0),
             total_input_tokens=summary['total_input_tokens'],
             total_output_tokens=summary['total_output_tokens'],
             finish_reason_counts=summary.get('finish_reason_counts', {})
@@ -301,10 +302,11 @@ def run_benchmark(
             
             for reason, count in sorted_reasons:
                 percentage = (count / total) * 100
-                click.echo(f"  └  {reason}: {count} ({percentage:.1f}%)")
+                click.echo(f"   └  {reason}: {count} ({percentage:.1f}%)")
         
         click.echo(f"  Success rate: {summary['success_rate']:.1%}")
         click.echo(f"  Average latency: {summary['avg_latency_ms']:.1f}ms")
+        click.echo(f"  Average RPS: {summary.get('avg_rps', 0):.2f} requests/sec")
         click.echo(f"  Total input tokens: {summary['total_input_tokens']}")
         click.echo(f"  Total output tokens: {summary['total_output_tokens']}")
         
