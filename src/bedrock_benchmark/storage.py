@@ -352,12 +352,19 @@ class StorageManager:
         
         # Calculate summary statistics
         total_responses = len(responses)
-        avg_latency = sum(r.latency_ms for r in responses) / total_responses
+        
+        # Calculate average latency excluding error responses (which have 0 latency)
+        non_error_responses = [r for r in responses if not getattr(r, 'is_error', False)]
+        if non_error_responses:
+            avg_latency = sum(r.latency_ms for r in non_error_responses) / len(non_error_responses)
+        else:
+            avg_latency = 0
+        
         total_input_tokens = sum(r.input_tokens for r in responses)
         total_output_tokens = sum(r.output_tokens for r in responses)
         
-        # Count successful responses (both 'stop' and 'end_turn' are successful completions)
-        successful_responses = sum(1 for r in responses if r.finish_reason in ['stop', 'end_turn'])
+        # Count successful responses (both 'stop' and 'end_turn' are successful completions, exclude errors)
+        successful_responses = sum(1 for r in responses if not getattr(r, 'is_error', False) and r.finish_reason in ['stop', 'end_turn'])
         success_rate = successful_responses / total_responses if total_responses > 0 else 0.0
         
         # Calculate finish_reason statistics

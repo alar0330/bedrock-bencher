@@ -293,13 +293,33 @@ class BenchmarkCore:
                     
                 except Exception as e:
                     logger.error(f"Failed to process item {item.id}: {e}")
+                    
+                    # Create error response for statistics tracking
+                    from .models import BedrockResponse
+                    error_response = BedrockResponse(
+                        item_id=item.id,
+                        response_text="",
+                        model_id=run_config.model_id,
+                        timestamp=datetime.now(),
+                        latency_ms=0,
+                        input_tokens=0,
+                        output_tokens=0,
+                        finish_reason="error",
+                        is_error=True,
+                        error_type=type(e).__name__,
+                        error_message=str(e)
+                    )
+                    
+                    # Save error response for statistics
+                    self.storage_manager.save_response(run_id, error_response)
+                    
                     progress.update(failed=1)
                     
                     # Report progress even for failures
                     if self.progress_callback:
                         self.progress_callback(progress)
                     
-                    return None
+                    return error_response
         
         # Create tasks for all items
         tasks = [process_single_item(item) for item in dataset_items]

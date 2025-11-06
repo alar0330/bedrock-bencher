@@ -28,6 +28,10 @@ class BedrockResponse:
     output_tokens: int
     finish_reason: str
     raw_response: Dict[str, Any] = field(default_factory=dict)
+    # Error tracking fields
+    is_error: bool = False
+    error_type: Optional[str] = None
+    error_message: Optional[str] = None
 
 
 @dataclass
