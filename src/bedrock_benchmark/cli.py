@@ -289,15 +289,10 @@ def run_benchmark(
         )
         
         click.echo(f"\nRun Summary:")
-        click.echo(f"  Total responses: {summary['total_responses']}")
-        click.echo(f"  Success rate: {summary['success_rate']:.1%}")
-        click.echo(f"  Average latency: {summary['avg_latency_ms']:.1f}ms")
-        click.echo(f"  Total input tokens: {summary['total_input_tokens']}")
-        click.echo(f"  Total output tokens: {summary['total_output_tokens']}")
+        click.echo(f"Total responses: {summary['total_responses']}")
         
-        # Display finish_reason statistics
+        # Display finish_reason statistics as sub-items
         if 'finish_reason_counts' in summary and summary['finish_reason_counts']:
-            click.echo(f"\nFinish Reason Breakdown:")
             finish_reasons = summary['finish_reason_counts']
             total = summary['total_responses']
             
@@ -306,7 +301,12 @@ def run_benchmark(
             
             for reason, count in sorted_reasons:
                 percentage = (count / total) * 100
-                click.echo(f"  {reason}: {count} ({percentage:.1f}%)")
+                click.echo(f"└  {reason}: {count} ({percentage:.1f}%)")
+        
+        click.echo(f"Success rate: {summary['success_rate']:.1%}")
+        click.echo(f"Average latency: {summary['avg_latency_ms']:.1f}ms")
+        click.echo(f"Total input tokens: {summary['total_input_tokens']}")
+        click.echo(f"Total output tokens: {summary['total_output_tokens']}")
         
         click.echo(f"\nTo export results: bedrock-benchmark export-run {run_id}")
         
