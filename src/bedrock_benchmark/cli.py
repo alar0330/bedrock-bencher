@@ -23,7 +23,7 @@ from .logging import setup_logging, get_logger
 logger = None
 
 
-def setup_progress_callback(verbose: bool = False, progress_logger=None):
+def setup_progress_callback(verbose: bool = False, progress_logger=None, log_structured: bool = False):
     """Create a progress callback function for CLI output."""
     last_reported_percentage = -1
     
@@ -36,8 +36,8 @@ def setup_progress_callback(verbose: bool = False, progress_logger=None):
         if verbose or int(completion_rate) >= last_reported_percentage + 5:
             processed = progress.completed_items + progress.failed_items
             
-            # Log structured progress if logger is available
-            if progress_logger:
+            # Log structured progress only if explicitly requested (e.g., for file logging)
+            if progress_logger and log_structured:
                 progress_logger.logger.info(
                     "Benchmark progress",
                     completed_items=progress.completed_items,
@@ -150,6 +150,8 @@ def cli(ctx, config: Optional[str], storage_path: Optional[str],
               help='Item ID to resume from (for interrupted runs)')
 @click.option('--verbose', '-v', is_flag=True, 
               help='Enable verbose progress reporting')
+@click.option('--log-progress', is_flag=True, 
+              help='Enable structured JSON progress logs (disabled by default to reduce console noise)')
 @click.pass_context
 def run_benchmark(
     ctx,
@@ -166,7 +168,8 @@ def run_benchmark(
     top_p: Optional[float],
     run_name: Optional[str],
     resume_from: Optional[str],
-    verbose: bool
+    verbose: bool,
+    log_progress: bool
 ):
     """Run a benchmark against a Bedrock model."""
     config = ctx.obj['config']
@@ -248,7 +251,7 @@ def run_benchmark(
     
     # Set up progress reporting with logging integration
     progress_logger = benchmark_logger.get_progress_logger()
-    progress_callback = setup_progress_callback(verbose, progress_logger)
+    progress_callback = setup_progress_callback(verbose, progress_logger, log_progress)
     
     # Initialize benchmark core
     benchmark_core = BenchmarkCore(storage_manager, progress_callback)
