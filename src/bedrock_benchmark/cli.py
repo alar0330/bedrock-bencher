@@ -205,8 +205,9 @@ def run_benchmark(
         
         # Check if experiment already existed
         experiment_metadata = storage_manager.get_experiment_metadata(experiment_id)
-        if experiment_metadata and len(experiment_metadata.runs) > 0:
-            click.echo(f"Using existing experiment: {exp_name} ({experiment_id}) - {len(experiment_metadata.runs)} existing runs")
+        existing_runs = storage_manager.list_runs(experiment_id)
+        if experiment_metadata and len(existing_runs) > 0:
+            click.echo(f"Using existing experiment: {exp_name} ({experiment_id}) - {len(existing_runs)} existing runs")
         else:
             click.echo(f"Created new experiment: {exp_name} ({experiment_id})")
     
