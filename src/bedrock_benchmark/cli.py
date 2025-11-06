@@ -200,7 +200,7 @@ def run_benchmark(
         exp_name = experiment_name or f"Benchmark {model}"
         exp_desc = experiment_description or f"Benchmarking {model} on {Path(dataset).name}"
         
-        benchmark_core = BenchmarkCore(storage_manager)
+        benchmark_core = BenchmarkCore(storage_manager, config=config)
         experiment_id = benchmark_core.create_experiment(exp_name, exp_desc)
         
         # Check if experiment already existed
@@ -255,7 +255,7 @@ def run_benchmark(
     progress_callback = setup_progress_callback(verbose, progress_logger, log_progress)
     
     # Initialize benchmark core
-    benchmark_core = BenchmarkCore(storage_manager, progress_callback)
+    benchmark_core = BenchmarkCore(storage_manager, progress_callback, config)
     
     # Run the benchmark
     try:
@@ -329,7 +329,8 @@ def create_experiment(ctx, name: str, description: Optional[str]):
     """Create a new experiment."""
     storage_manager = ctx.obj['storage_manager']
     
-    benchmark_core = BenchmarkCore(storage_manager)
+    config = ctx.obj['config']
+    benchmark_core = BenchmarkCore(storage_manager, config=config)
     experiment_id = benchmark_core.create_experiment(name, description or "")
     
     click.echo(f"Created experiment: {name}")
@@ -342,7 +343,8 @@ def list_experiments(ctx):
     """List all experiments."""
     storage_manager = ctx.obj['storage_manager']
     
-    benchmark_core = BenchmarkCore(storage_manager)
+    config = ctx.obj['config']
+    benchmark_core = BenchmarkCore(storage_manager, config=config)
     experiments = benchmark_core.list_experiments()
     
     if not experiments:
@@ -366,7 +368,8 @@ def list_runs(ctx, experiment_id: str):
     """List runs for an experiment."""
     storage_manager = ctx.obj['storage_manager']
     
-    benchmark_core = BenchmarkCore(storage_manager)
+    config = ctx.obj['config']
+    benchmark_core = BenchmarkCore(storage_manager, config=config)
     
     # Get experiment metadata
     experiment = benchmark_core.get_experiment_metadata(experiment_id)
@@ -404,8 +407,9 @@ def list_runs(ctx, experiment_id: str):
 def export_run(ctx, run_id: str, output: Optional[str], dataset: Optional[str], format: str):
     """Export run results to a file."""
     storage_manager = ctx.obj['storage_manager']
+    config = ctx.obj['config']
     
-    benchmark_core = BenchmarkCore(storage_manager)
+    benchmark_core = BenchmarkCore(storage_manager, config=config)
     
     try:
         # Export to DataFrame
@@ -445,8 +449,9 @@ def export_run(ctx, run_id: str, output: Optional[str], dataset: Optional[str], 
 def compare_runs(ctx, run_ids: tuple, output: Optional[str], dataset: Optional[str], format: str):
     """Compare multiple runs in a single file."""
     storage_manager = ctx.obj['storage_manager']
+    config = ctx.obj['config']
     
-    benchmark_core = BenchmarkCore(storage_manager)
+    benchmark_core = BenchmarkCore(storage_manager, config=config)
     
     try:
         # Export to DataFrame
@@ -494,8 +499,9 @@ def compare_runs(ctx, run_ids: tuple, output: Optional[str], dataset: Optional[s
 def show_run(ctx, run_id: str):
     """Show detailed information about a run."""
     storage_manager = ctx.obj['storage_manager']
+    config = ctx.obj['config']
     
-    benchmark_core = BenchmarkCore(storage_manager)
+    benchmark_core = BenchmarkCore(storage_manager, config=config)
     
     try:
         summary = benchmark_core.get_run_summary(run_id)

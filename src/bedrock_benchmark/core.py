@@ -10,6 +10,7 @@ from typing import Dict, List, Optional, Any, Callable
 from pathlib import Path
 
 from .models import BenchmarkItem, BedrockResponse, RunConfig
+from .config import BenchmarkConfig
 from .dataset import DatasetLoader
 from .client import BedrockClient
 from .storage import StorageManager
@@ -76,7 +77,8 @@ class BenchmarkCore:
     def __init__(
         self,
         storage_manager: Optional[StorageManager] = None,
-        progress_callback: Optional[Callable[[BenchmarkProgress], None]] = None
+        progress_callback: Optional[Callable[[BenchmarkProgress], None]] = None,
+        config: Optional['BenchmarkConfig'] = None
     ):
         """
         Initialize the benchmark coordinator.
@@ -84,9 +86,11 @@ class BenchmarkCore:
         Args:
             storage_manager: Storage manager instance (creates default if None)
             progress_callback: Optional callback function for progress updates
+            config: Benchmark configuration for retry settings and other options
         """
         self.storage_manager = storage_manager or StorageManager()
         self.progress_callback = progress_callback
+        self.config = config
         self._shutdown_requested = False
         self._setup_signal_handlers()
     
@@ -188,8 +192,15 @@ class BenchmarkCore:
         # Initialize progress tracking
         progress = BenchmarkProgress(len(dataset_items))
         
-        # Create Bedrock client
-        backoff_handler = BackoffHandler()
+        # Create Bedrock client with configured retry settings
+        if self.config:
+            backoff_handler = BackoffHandler(
+                max_retries=self.config.max_retries,
+                base_delay=self.config.base_delay,
+                max_delay=self.config.max_delay
+            )
+        else:
+            backoff_handler = BackoffHandler()
         
         try:
             async with BedrockClient(
