@@ -5,8 +5,9 @@ A minimalistic and lightweight toolkit for benchmarking different Large Language
 ## Features
 
 - **JSONL Dataset Support**: Load datasets with prompts and ground truth responses
+- **Multi-Modal Embeddings**: Generate text and image embeddings with Titan, Nova, and Cohere models
 - **Concurrent Processing**: Evaluate multiple prompts simultaneously for faster benchmarking
-- **Amazon Bedrock Integration**: Native support for all Bedrock models via Converse API
+- **Amazon Bedrock Integration**: Native support for all Bedrock models via Converse API and InvokeModel API
 - **Robust Error Handling**: Exponential backoff retry logic for API throttling and errors
 - **Human-Readable Organization**: Experiments and runs use descriptive folder names with timestamps
 - **Custom Run Names**: Name your benchmark runs for easy identification and comparison
@@ -58,11 +59,11 @@ Create a JSONL file with your prompts and expected responses:
 
 ```bash
 # Use one of the provided examples
-cp examples/simple_qa.jsonl my_dataset.jsonl
+cp examples/text_qa_task_100.jsonl my_dataset.jsonl
 
 # Or create your own
-echo '{"prompt": "What is the capital of France?", "expected_response": "Paris"}' > my_dataset.jsonl
-echo '{"prompt": "What is 2 + 2?", "expected_response": "4"}' >> my_dataset.jsonl
+echo '{"prompt": "What is the capital of France?", "expected_response": "Paris", "id": "q1"}' > my_dataset.jsonl
+echo '{"prompt": "What is 2 + 2?", "expected_response": "4", "id": "q2"}' >> my_dataset.jsonl
 ```
 
 ### 2. Run Your First Benchmark
@@ -100,6 +101,59 @@ jupyter notebook benchmark_analysis.ipynb
 bedrock-bencher show-run baseline-test_20241024-143055_x9y8
 ```
 
+## Embeddings Quick Start
+
+Generate embeddings for text and images using Bedrock embedding models:
+
+### Text Embeddings
+
+```bash
+# Create a text dataset
+cat > texts.jsonl << EOF
+{"id": "doc_001", "text": "Machine learning is transforming technology"}
+{"id": "doc_002", "text": "Natural language processing enables AI"}
+EOF
+
+# Generate embeddings with Titan Multimodal
+bedrock-bencher embed \
+    --dataset texts.jsonl \
+    --model amazon.titan-embed-image-v1 \
+    --output-dimension 256 \
+    --experiment-name "Text Embeddings"
+```
+
+### Image Embeddings
+
+```bash
+# Create an image dataset
+cat > images.jsonl << EOF
+{"id": "img_001", "image_path": "images/photo1.jpg"}
+{"id": "img_002", "image_path": "images/photo2.png"}
+EOF
+
+# Generate embeddings with Nova
+bedrock-bencher embed \
+    --dataset images.jsonl \
+    --model amazon.nova-2-multimodal-embeddings-v1:0 \
+    --embedding-purpose GENERIC_INDEX
+```
+
+### Multi-Modal Embeddings
+
+```bash
+# Combine text and images (Cohere v4)
+cat > multimodal.jsonl << EOF
+{"id": "mm_001", "text": "A sunset over the ocean", "image_path": "images/sunset.jpg"}
+EOF
+
+bedrock-bencher embed \
+    --dataset multimodal.jsonl \
+    --model cohere.embed-v4 \
+    --input-type search_document
+```
+
+**See [Embeddings CLI Guide](docs/CLI_EMBEDDINGS.md) for complete documentation and [examples/embeddings_cli_examples.sh](examples/embeddings_cli_examples.sh) for more examples.**
+
 ## Usage Examples
 
 ### Basic Benchmarking Workflows
@@ -131,13 +185,13 @@ bedrock-bencher create-experiment "Model Comparison" \
 # Run multiple models on the same dataset with descriptive names
 # These will be added to the same "model-comparison" experiment folder
 bedrock-bencher run-benchmark \
-    --dataset examples/reasoning_tasks.jsonl \
+    --dataset examples/coding_tasks.jsonl \
     --model anthropic.claude-3-sonnet-20240229-v1:0 \
     --experiment "Model Comparison" \
     --run-name "Claude Sonnet"
 
 bedrock-bencher run-benchmark \
-    --dataset examples/reasoning_tasks.jsonl \
+    --dataset examples/coding_tasks.jsonl \
     --model anthropic.claude-3-haiku-20240307-v1:0 \
     --experiment "Model Comparison" \
     --run-name "Claude Haiku"
@@ -162,7 +216,7 @@ EOF
 
 # Run with configuration
 bedrock-bencher --config config.yaml run-benchmark \
-    --dataset examples/comprehensive_benchmark.jsonl \
+    --dataset examples/text_qa_task_100.jsonl \
     --model anthropic.claude-3-sonnet-20240229-v1:0
 ```
 
@@ -411,7 +465,7 @@ bedrock-bencher --storage-path ./custom_experiments \
                   run-benchmark \
                   --region us-west-2 \
                   --max-concurrent 5 \
-                  --dataset examples/simple_qa.jsonl \
+                  --dataset examples/text_qa_task_100.jsonl \
                   --model anthropic.claude-3-sonnet-20240229-v1:0 \
                   --experiment-name "Custom Test" \
                   --run-name "Debug Run"
@@ -429,12 +483,16 @@ bedrock-bencher --storage-path ./custom_experiments \
 
 The `examples/` directory contains sample JSONL datasets for testing:
 
-- **`simple_qa.jsonl`**: Basic Q&A pairs without metadata
+**Text Generation Datasets:**
+- **`text_qa_task_100.jsonl`**: 100 Q&A pairs for quick benchmarking
+- **`text_qa_task_500.jsonl`**: 500 Q&A pairs for comprehensive testing
 - **`coding_tasks.jsonl`**: Programming questions with difficulty and language metadata
 - **`creative_writing.jsonl`**: Creative prompts with genre and style metadata
-- **`reasoning_tasks.jsonl`**: Logic puzzles with cognitive metadata
 - **`multilingual.jsonl`**: Translation tasks with language metadata
-- **`comprehensive_benchmark.jsonl`**: Mixed dataset with rich metadata
+
+**Embeddings Datasets:**
+- **`embeddings_sample_texts.jsonl`**: 10 text samples for embedding generation
+- **`embeddings_sample_images.jsonl`**: 10 product images for visual embeddings
 
 See `examples/README.md` for detailed descriptions.
 
@@ -512,7 +570,7 @@ bedrock-bencher --log-level DEBUG \
                   --log-file debug.log \
                   run-benchmark \
                   --verbose \
-                  --dataset examples/simple_qa.jsonl \
+                  --dataset examples/text_qa_task_100.jsonl \
                   --model anthropic.claude-3-sonnet-20240229-v1:0
 ```
 

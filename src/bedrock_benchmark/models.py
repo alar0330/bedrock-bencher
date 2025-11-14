@@ -35,6 +35,22 @@ class BedrockResponse:
 
 
 @dataclass
+class EmbeddingResponse:
+    """Represents an embedding response from Amazon Bedrock."""
+    item_id: str
+    embedding: List[float]
+    model_id: str
+    timestamp: datetime
+    latency_ms: int
+    input_tokens: Optional[int] = None
+    raw_response: Dict[str, Any] = field(default_factory=dict)
+    # Error tracking fields
+    is_error: bool = False
+    error_type: Optional[str] = None
+    error_message: Optional[str] = None
+
+
+@dataclass
 class RunConfig:
     """Configuration for a benchmark run."""
     model_id: str

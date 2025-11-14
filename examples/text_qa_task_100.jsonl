@@ -1,0 +1,109 @@
+{"prompt": "What is the capital of France?", "expected_response": "Paris", "id": "item_001"}
+{"prompt": "What is 2 + 2?", "expected_response": "4", "id": "item_002"}
+{"prompt": "Who wrote Romeo and Juliet?", "expected_response": "William Shakespeare", "id": "item_003"}
+{"prompt": "What is the largest planet in our solar system?", "expected_response": "Jupiter", "id": "item_004"}
+{"prompt": "What year did World War II end?", "expected_response": "1945", "id": "item_005"}
+{"prompt": "What is the chemical symbol for gold?", "expected_response": "Au", "id": "item_006"}
+{"prompt": "How many continents are there?", "expected_response": "7", "id": "item_007"}
+{"prompt": "What is the speed of light?", "expected_response": "299,792,458 meters per second", "id": "item_008"}
+{"prompt": "Who painted the Mona Lisa?", "expected_response": "Leonardo da Vinci", "id": "item_009"}
+{"prompt": "What is the smallest prime number?", "expected_response": "2", "id": "item_010"}
+{"prompt": "What is the capital of Japan?", "expected_response": "Tokyo", "id": "item_011"}
+{"prompt": "How many sides does a triangle have?", "expected_response": "3", "id": "item_012"}
+{"prompt": "What is the boiling point of water at sea level?", "expected_response": "100 degrees Celsius or 212 degrees Fahrenheit", "id": "item_013"}
+{"prompt": "Who invented the telephone?", "expected_response": "Alexander Graham Bell", "id": "item_014"}
+{"prompt": "What is the largest ocean on Earth?", "expected_response": "Pacific Ocean", "id": "item_015"}
+{"prompt": "What is 10 x 10?", "expected_response": "100", "id": "item_016"}
+{"prompt": "What gas do plants absorb from the atmosphere?", "expected_response": "Carbon dioxide", "id": "item_017"}
+{"prompt": "What is the hardest natural substance?", "expected_response": "Diamond", "id": "item_018"}
+{"prompt": "How many bones are in the adult human body?", "expected_response": "206", "id": "item_019"}
+{"prompt": "What is the capital of Australia?", "expected_response": "Canberra", "id": "item_020"}
+{"prompt": "What is the square root of 64?", "expected_response": "8", "id": "item_021"}
+{"prompt": "Who wrote '1984'?", "expected_response": "George Orwell", "id": "item_022"}
+{"prompt": "What is the longest river in the world?", "expected_response": "Nile River", "id": "item_023"}
+{"prompt": "What planet is known as the Red Planet?", "expected_response": "Mars", "id": "item_024"}
+{"prompt": "What is 15 + 27?", "expected_response": "42", "id": "item_025"}
+{"prompt": "What is the currency of the United Kingdom?", "expected_response": "Pound Sterling", "id": "item_026"}
+{"prompt": "How many minutes are in an hour?", "expected_response": "60", "id": "item_027"}
+{"prompt": "What is the chemical formula for water?", "expected_response": "H2O", "id": "item_028"}
+{"prompt": "Who composed 'The Four Seasons'?", "expected_response": "Antonio Vivaldi", "id": "item_029"}
+{"prompt": "What is the tallest mountain in the world?", "expected_response": "Mount Everest", "id": "item_030"}
+{"prompt": "What is 144 divided by 12?", "expected_response": "12", "id": "item_031"}
+{"prompt": "What organ pumps blood through the human body?", "expected_response": "Heart", "id": "item_032"}
+{"prompt": "What is the capital of Canada?", "expected_response": "Ottawa", "id": "item_033"}
+{"prompt": "How many days are in a leap year?", "expected_response": "366", "id": "item_034"}
+{"prompt": "What is the freezing point of water?", "expected_response": "0 degrees Celsius or 32 degrees Fahrenheit", "id": "item_035"}
+{"prompt": "Who painted 'Starry Night'?", "expected_response": "Vincent van Gogh", "id": "item_036"}
+{"prompt": "What is the smallest country in the world?", "expected_response": "Vatican City", "id": "item_037"}
+{"prompt": "What is 7 x 8?", "expected_response": "56", "id": "item_038"}
+{"prompt": "What gas makes up most of Earth's atmosphere?", "expected_response": "Nitrogen", "id": "item_039"}
+{"prompt": "What is the largest mammal?", "expected_response": "Blue whale", "id": "item_040"}
+{"prompt": "What is the capital of Brazil?", "expected_response": "Brasília", "id": "item_041"}
+{"prompt": "How many strings does a standard guitar have?", "expected_response": "6", "id": "item_042"}
+{"prompt": "What is the process by which plants make food?", "expected_response": "Photosynthesis", "id": "item_043"}
+{"prompt": "Who wrote 'Pride and Prejudice'?", "expected_response": "Jane Austen", "id": "item_044"}
+{"prompt": "What is the deepest ocean trench?", "expected_response": "Mariana Trench", "id": "item_045"}
+{"prompt": "What is 9 squared?", "expected_response": "81", "id": "item_046"}
+{"prompt": "What is the most abundant element in the universe?", "expected_response": "Hydrogen", "id": "item_047"}
+{"prompt": "What is the capital of Germany?", "expected_response": "Berlin", "id": "item_048"}
+{"prompt": "How many chambers does a human heart have?", "expected_response": "4", "id": "item_049"}
+{"prompt": "What is the study of earthquakes called?", "expected_response": "Seismology", "id": "item_050"}
+{"prompt": "Who discovered penicillin?", "expected_response": "Alexander Fleming", "id": "item_051"}
+{"prompt": "What is the fastest land animal?", "expected_response": "Cheetah", "id": "item_052"}
+{"prompt": "What is 50% of 200?", "expected_response": "100", "id": "item_053"}
+{"prompt": "What is the largest desert in the world?", "expected_response": "Antarctica (or Sahara if considering hot deserts)", "id": "item_054"}
+{"prompt": "What is the capital of Russia?", "expected_response": "Moscow", "id": "item_055"}
+{"prompt": "How many legs does a spider have?", "expected_response": "8", "id": "item_056"}
+{"prompt": "What is the powerhouse of the cell?", "expected_response": "Mitochondria", "id": "item_057"}
+{"prompt": "Who wrote 'To Kill a Mockingbird'?", "expected_response": "Harper Lee", "id": "item_058"}
+{"prompt": "What is the closest star to Earth?", "expected_response": "The Sun", "id": "item_059"}
+{"prompt": "What is 3 cubed?", "expected_response": "27", "id": "item_060"}
+{"prompt": "What is the study of living organisms called?", "expected_response": "Biology", "id": "item_061"}
+{"prompt": "What is the capital of Italy?", "expected_response": "Rome", "id": "item_062"}
+{"prompt": "How many sides does a hexagon have?", "expected_response": "6", "id": "item_063"}
+{"prompt": "What is the largest bone in the human body?", "expected_response": "Femur", "id": "item_064"}
+{"prompt": "Who invented the light bulb?", "expected_response": "Thomas Edison", "id": "item_065"}
+{"prompt": "What is the hottest planet in our solar system?", "expected_response": "Venus", "id": "item_066"}
+{"prompt": "What is 25 x 4?", "expected_response": "100", "id": "item_067"}
+{"prompt": "What is the study of the weather called?", "expected_response": "Meteorology", "id": "item_068"}
+{"prompt": "What is the capital of China?", "expected_response": "Beijing", "id": "item_069"}
+{"prompt": "How many teeth does an adult human typically have?", "expected_response": "32", "id": "item_070"}
+{"prompt": "What is the longest bone in the human body?", "expected_response": "Femur", "id": "item_071"}
+{"prompt": "Who wrote 'The Great Gatsby'?", "expected_response": "F. Scott Fitzgerald", "id": "item_072"}
+{"prompt": "What is the smallest planet in our solar system?", "expected_response": "Mercury", "id": "item_073"}
+{"prompt": "What is 100 divided by 5?", "expected_response": "20", "id": "item_074"}
+{"prompt": "What is the study of stars and planets called?", "expected_response": "Astronomy", "id": "item_075"}
+{"prompt": "What is the capital of India?", "expected_response": "New Delhi", "id": "item_076"}
+{"prompt": "How many colors are in a rainbow?", "expected_response": "7", "id": "item_077"}
+{"prompt": "What is the largest internal organ in the human body?", "expected_response": "Liver", "id": "item_078"}
+{"prompt": "Who composed 'Moonlight Sonata'?", "expected_response": "Ludwig van Beethoven", "id": "item_079"}
+{"prompt": "What is the coldest planet in our solar system?", "expected_response": "Neptune", "id": "item_080"}
+{"prompt": "What is 6 x 7?", "expected_response": "42", "id": "item_081"}
+{"prompt": "What is the study of ancient life called?", "expected_response": "Paleontology", "id": "item_082"}
+{"prompt": "What is the capital of Egypt?", "expected_response": "Cairo", "id": "item_083"}
+{"prompt": "How many players are on a basketball team on the court?", "expected_response": "5", "id": "item_084"}
+{"prompt": "What is the strongest muscle in the human body?", "expected_response": "Masseter (jaw muscle)", "id": "item_085"}
+{"prompt": "Who wrote 'Harry Potter'?", "expected_response": "J.K. Rowling", "id": "item_086"}
+{"prompt": "What is the brightest star in the night sky?", "expected_response": "Sirius", "id": "item_087"}
+{"prompt": "What is 12 x 12?", "expected_response": "144", "id": "item_088"}
+{"prompt": "What is the study of the mind and behavior called?", "expected_response": "Psychology", "id": "item_089"}
+{"prompt": "What is the capital of Mexico?", "expected_response": "Mexico City", "id": "item_090"}
+{"prompt": "How many seconds are in a minute?", "expected_response": "60", "id": "item_091"}
+{"prompt": "What is the largest artery in the human body?", "expected_response": "Aorta", "id": "item_092"}
+{"prompt": "Who painted 'The Last Supper'?", "expected_response": "Leonardo da Vinci", "id": "item_093"}
+{"prompt": "What is the farthest planet from the Sun?", "expected_response": "Neptune", "id": "item_094"}
+{"prompt": "What is 81 divided by 9?", "expected_response": "9", "id": "item_095"}
+{"prompt": "What is the study of rocks called?", "expected_response": "Geology", "id": "item_096"}
+{"prompt": "What is the capital of South Korea?", "expected_response": "Seoul", "id": "item_097"}
+{"prompt": "How many wheels does a tricycle have?", "expected_response": "3", "id": "item_098"}
+{"prompt": "What is the largest muscle in the human body?", "expected_response": "Gluteus maximus", "id": "item_099"}
+{"prompt": "Who wrote 'The Lord of the Rings'?", "expected_response": "J.R.R. Tolkien", "id": "item_100"}
+{"prompt": "What is the most distant planet visible to the naked eye?", "expected_response": "Saturn", "id": "item_101"}
+{"prompt": "What is 5 x 11?", "expected_response": "55", "id": "item_102"}
+{"prompt": "What is the study of insects called?", "expected_response": "Entomology", "id": "item_103"}
+{"prompt": "What is the capital of Argentina?", "expected_response": "Buenos Aires", "id": "item_104"}
+{"prompt": "How many sides does a pentagon have?", "expected_response": "5", "id": "item_105"}
+{"prompt": "What is the smallest bone in the human body?", "expected_response": "Stapes (in the ear)", "id": "item_106"}
+{"prompt": "Who discovered gravity?", "expected_response": "Isaac Newton", "id": "item_107"}
+{"prompt": "What is the largest moon in our solar system?", "expected_response": "Ganymede", "id": "item_108"}
+{"prompt": "What is 13 + 17?", "expected_response": "30", "id": "item_109"}

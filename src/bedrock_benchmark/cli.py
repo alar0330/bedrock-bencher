@@ -17,6 +17,7 @@ from .models import RunConfig
 from .storage import StorageManager
 from .config import load_config_with_auto_discovery, BenchmarkConfig
 from .logging import setup_logging, get_logger
+from .embeddings_client import EmbeddingsClient
 
 
 # Global logger - will be configured after config is loaded
@@ -318,6 +319,302 @@ def run_benchmark(
     except Exception as e:
         logger.error("Benchmark failed", error=str(e), exc_info=e)
         click.echo(f"Error running benchmark: {e}", err=True)
+        sys.exit(1)
+
+
+@cli.command()
+@click.option('--dataset', '-d',
+              help='Path to JSONL dataset file with text/image inputs')
+@click.option('--model', '-m', required=True,
+              help='Bedrock embedding model ID')
+@click.option('--experiment', '-e',
+              help='Experiment ID (if not provided, will create new experiment)')
+@click.option('--experiment-name',
+              help='Name for new experiment (used if --experiment not provided)')
+@click.option('--experiment-description',
+              help='Description for new experiment')
+@click.option('--region',
+              help='AWS region (overrides config)',
+              envvar='AWS_DEFAULT_REGION')
+@click.option('--max-concurrent', type=int,
+              help='Maximum concurrent requests (overrides config)')
+@click.option('--run-name',
+              help='Human-readable name for this run')
+@click.option('--output-dimension', type=int,
+              help='Embedding output dimension (Titan: 256/384/1024, Nova: 1024)')
+@click.option('--embedding-purpose',
+              type=click.Choice(['GENERIC_INDEX', 'SEARCH_QUERY', 'CLASSIFICATION'], case_sensitive=False),
+              help='Embedding purpose for Nova models')
+@click.option('--input-type',
+              type=click.Choice(['search_document', 'search_query', 'classification'], case_sensitive=False),
+              help='Input type for Cohere models')
+@click.option('--truncate',
+              type=click.Choice(['END', 'START', 'NONE'], case_sensitive=False),
+              help='Truncation mode for text inputs')
+@click.option('--verbose', '-v', is_flag=True,
+              help='Enable verbose progress reporting')
+@click.option('--log-progress', is_flag=True,
+              help='Enable structured JSON progress logs')
+@click.pass_context
+def embed(
+    ctx,
+    dataset: Optional[str],
+    model: str,
+    experiment: Optional[str],
+    experiment_name: Optional[str],
+    experiment_description: Optional[str],
+    region: Optional[str],
+    max_concurrent: Optional[int],
+    run_name: Optional[str],
+    output_dimension: Optional[int],
+    embedding_purpose: Optional[str],
+    input_type: Optional[str],
+    truncate: Optional[str],
+    verbose: bool,
+    log_progress: bool
+):
+    """Generate embeddings using Bedrock embedding models.
+    
+    Supports text and image embeddings with Titan, Nova, and Cohere models.
+    
+    Dataset format (JSONL):
+    - Text: {"id": "item_001", "text": "Your text here"}
+    - Image: {"id": "img_001", "image_path": "path/to/image.jpg"}
+    - Multi-modal: {"id": "mm_001", "text": "Description", "image_path": "path/to/image.jpg"}
+    
+    Examples:
+    
+      # Text embeddings with Titan Multimodal
+      bedrock-bencher embed -d texts.jsonl -m amazon.titan-embed-image-v1 --output-dimension 256
+      
+      # Image embeddings with Nova
+      bedrock-bencher embed -d images.jsonl -m amazon.nova-2-multimodal-embeddings-v1:0
+      
+      # Multi-modal with Cohere v4
+      bedrock-bencher embed -d multimodal.jsonl -m cohere.embed-v4 --input-type search_document
+    """
+    config = ctx.obj['config']
+    storage_manager = ctx.obj['storage_manager']
+    benchmark_logger = ctx.obj['benchmark_logger']
+    
+    # Validate dataset
+    if not dataset:
+        click.echo("Error: --dataset is required", err=True)
+        sys.exit(1)
+    
+    if not Path(dataset).exists():
+        logger.error("Dataset file not found", dataset_path=dataset)
+        click.echo(f"Error: Dataset file not found: {dataset}", err=True)
+        sys.exit(1)
+    
+    # Use configuration values with CLI overrides
+    aws_region = region or config.aws_region
+    concurrent_limit = max_concurrent or config.max_concurrent
+    
+    # Create or validate experiment
+    if experiment:
+        experiment_metadata = storage_manager.get_experiment_metadata(experiment)
+        if not experiment_metadata:
+            click.echo(f"Error: Experiment {experiment} not found", err=True)
+            sys.exit(1)
+        experiment_id = experiment
+        click.echo(f"Using existing experiment: {experiment_metadata.name} ({experiment_id})")
+    else:
+        exp_name = experiment_name or f"Embeddings {model}"
+        exp_desc = experiment_description or f"Generating embeddings with {model} on {Path(dataset).name}"
+        
+        experiment_id = storage_manager.create_experiment(exp_name, exp_desc)
+        click.echo(f"Created experiment: {exp_name} ({experiment_id})")
+    
+    # Build model-specific parameters
+    model_params = {}
+    
+    # Detect model family and set appropriate parameters
+    model_lower = model.lower()
+    
+    if 'titan' in model_lower:
+        # Titan Multimodal parameters (uses embeddingConfig)
+        embedding_config = {}
+        if output_dimension:
+            embedding_config['outputEmbeddingLength'] = output_dimension
+        if embedding_config:
+            model_params['embeddingConfig'] = embedding_config
+    
+    elif 'nova' in model_lower:
+        # Nova parameters
+        if embedding_purpose:
+            model_params['embeddingPurpose'] = embedding_purpose.upper()
+        if output_dimension:
+            model_params['embeddingDimension'] = output_dimension
+        if truncate:
+            model_params['truncationMode'] = truncate.upper()
+    
+    elif 'cohere' in model_lower:
+        # Cohere parameters
+        if input_type:
+            model_params['input_type'] = input_type.lower()
+        if truncate:
+            model_params['truncate'] = truncate.upper()
+    
+    # Create run configuration
+    run_config = RunConfig(
+        model_id=model,
+        model_params=model_params,
+        max_concurrent=concurrent_limit,
+        dataset_path=dataset
+    )
+    
+    # Create run
+    run_id = storage_manager.create_run(
+        experiment_id=experiment_id,
+        config=run_config,
+        run_name=run_name or f"{model.split('.')[-1]}-embeddings"
+    )
+    
+    # Log embedding generation start
+    logger.info(
+        "Starting embedding generation",
+        model_id=model,
+        dataset_path=dataset,
+        aws_region=aws_region,
+        max_concurrent=concurrent_limit,
+        model_params=model_params
+    )
+    
+    click.echo(f"\nStarting embedding generation...")
+    click.echo(f"Model: {model}")
+    click.echo(f"Dataset: {dataset}")
+    click.echo(f"Region: {aws_region}")
+    click.echo(f"Max concurrent: {concurrent_limit}")
+    if model_params:
+        click.echo(f"Model parameters: {model_params}")
+    click.echo(f"Run ID: {run_id}")
+    
+    # Load dataset
+    try:
+        items = []
+        with open(dataset, 'r') as f:
+            for line_num, line in enumerate(f, 1):
+                if line.strip():
+                    try:
+                        item = json.loads(line)
+                        if 'id' not in item:
+                            click.echo(f"Warning: Line {line_num} missing 'id' field, skipping", err=True)
+                            continue
+                        items.append(item)
+                    except json.JSONDecodeError as e:
+                        click.echo(f"Warning: Line {line_num} invalid JSON, skipping: {e}", err=True)
+        
+        if not items:
+            click.echo("Error: No valid items found in dataset", err=True)
+            sys.exit(1)
+        
+        click.echo(f"Loaded {len(items)} items from dataset\n")
+        
+    except Exception as e:
+        logger.error("Failed to load dataset", error=str(e), exc_info=e)
+        click.echo(f"Error loading dataset: {e}", err=True)
+        sys.exit(1)
+    
+    # Generate embeddings
+    async def generate_embeddings():
+        async with EmbeddingsClient(
+            model_id=model,
+            region=aws_region
+        ) as client:
+            
+            successful = 0
+            failed = 0
+            total_latency = 0
+            start_time = asyncio.get_event_loop().time()
+            
+            # Process items with concurrency control
+            semaphore = asyncio.Semaphore(concurrent_limit)
+            
+            async def process_item(item, index):
+                nonlocal successful, failed, total_latency
+                
+                async with semaphore:
+                    item_id = item['id']
+                    text = item.get('text')
+                    image_path = item.get('image_path')
+                    
+                    if verbose:
+                        click.echo(f"[{index + 1}/{len(items)}] Processing: {item_id}")
+                    
+                    # Generate embedding
+                    response = await client.invoke_model(
+                        item_id=item_id,
+                        text=text,
+                        image_path=image_path,
+                        **model_params
+                    )
+                    
+                    # Save response
+                    storage_manager.save_response(run_id, response)
+                    
+                    if response.is_error:
+                        failed += 1
+                        if verbose:
+                            click.echo(f"  ❌ Error: {response.error_message}")
+                    else:
+                        successful += 1
+                        total_latency += response.latency_ms
+                        if verbose:
+                            click.echo(f"  ✓ Embedding dim: {len(response.embedding)}, "
+                                     f"Latency: {response.latency_ms}ms")
+                    
+                    # Progress reporting (every 5% or if verbose)
+                    processed = successful + failed
+                    if not verbose and processed % max(1, len(items) // 20) == 0:
+                        completion = (processed / len(items)) * 100
+                        elapsed = asyncio.get_event_loop().time() - start_time
+                        click.echo(f"Progress: {processed}/{len(items)} ({completion:.1f}%) - "
+                                 f"Elapsed: {elapsed:.1f}s")
+            
+            # Process all items
+            tasks = [process_item(item, i) for i, item in enumerate(items)]
+            await asyncio.gather(*tasks)
+            
+            return successful, failed, total_latency
+    
+    # Run embedding generation
+    try:
+        successful, failed, total_latency = asyncio.run(generate_embeddings())
+        
+        # Calculate statistics
+        total_items = successful + failed
+        success_rate = (successful / total_items * 100) if total_items > 0 else 0
+        avg_latency = (total_latency / successful) if successful > 0 else 0
+        
+        logger.info(
+            "Embedding generation completed",
+            run_id=run_id,
+            total_items=total_items,
+            successful=successful,
+            failed=failed,
+            success_rate=success_rate,
+            avg_latency_ms=avg_latency
+        )
+        
+        click.echo(f"\n{'='*60}")
+        click.echo(f"Embedding generation completed!")
+        click.echo(f"{'='*60}")
+        click.echo(f"Run ID: {run_id}")
+        click.echo(f"Total items: {total_items}")
+        click.echo(f"Successful: {successful}")
+        click.echo(f"Failed: {failed}")
+        click.echo(f"Success rate: {success_rate:.1f}%")
+        click.echo(f"Average latency: {avg_latency:.1f}ms")
+        click.echo(f"\nTo export results: bedrock-bencher export-run {run_id}")
+        
+    except KeyboardInterrupt:
+        logger.info("Embedding generation interrupted by user")
+        click.echo("\nEmbedding generation interrupted by user")
+        sys.exit(1)
+    except Exception as e:
+        logger.error("Embedding generation failed", error=str(e), exc_info=e)
+        click.echo(f"Error generating embeddings: {e}", err=True)
         sys.exit(1)
 
 

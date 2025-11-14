@@ -8,10 +8,10 @@ import re
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Union
 import pandas as pd
 
-from .models import ExperimentMetadata, RunConfig, BedrockResponse, BenchmarkItem
+from .models import ExperimentMetadata, RunConfig, BedrockResponse, EmbeddingResponse, BenchmarkItem
 
 
 def make_path_safe(name: str, max_length: int = 30) -> str:
@@ -137,8 +137,8 @@ class StorageManager:
         
         return run_id
     
-    def save_response(self, run_id: str, response: BedrockResponse) -> None:
-        """Save a response to the appropriate run."""
+    def save_response(self, run_id: str, response: Union[BedrockResponse, EmbeddingResponse]) -> None:
+        """Save a response (text generation or embedding) to the appropriate run."""
         # Find the run path by searching through experiments
         run_path = self._find_run_path(run_id)
         if not run_path:
@@ -146,23 +146,42 @@ class StorageManager:
         
         responses_path = run_path / "responses.jsonl"
         
-        # Append response to JSONL file
-        response_data = {
-            'item_id': response.item_id,
-            'response_text': response.response_text,
-            'model_id': response.model_id,
-            'timestamp': response.timestamp.isoformat(),
-            'latency_ms': response.latency_ms,
-            'input_tokens': response.input_tokens,
-            'output_tokens': response.output_tokens,
-            'finish_reason': response.finish_reason,
-            'raw_response': response.raw_response
-        }
+        # Detect response type and serialize appropriately
+        if isinstance(response, EmbeddingResponse):
+            # Store embedding field for EmbeddingResponse
+            response_data = {
+                'item_id': response.item_id,
+                'embedding': response.embedding,
+                'model_id': response.model_id,
+                'timestamp': response.timestamp.isoformat(),
+                'latency_ms': response.latency_ms,
+                'input_tokens': response.input_tokens,
+                'raw_response': response.raw_response,
+                'is_error': response.is_error,
+                'error_type': response.error_type,
+                'error_message': response.error_message
+            }
+        else:
+            # Store response_text for BedrockResponse
+            response_data = {
+                'item_id': response.item_id,
+                'response_text': response.response_text,
+                'model_id': response.model_id,
+                'timestamp': response.timestamp.isoformat(),
+                'latency_ms': response.latency_ms,
+                'input_tokens': response.input_tokens,
+                'output_tokens': response.output_tokens,
+                'finish_reason': response.finish_reason,
+                'raw_response': response.raw_response,
+                'is_error': response.is_error,
+                'error_type': response.error_type,
+                'error_message': response.error_message
+            }
         
         with open(responses_path, 'a') as f:
             f.write(json.dumps(response_data) + '\n')
     
-    def load_responses(self, run_id: str) -> List[BedrockResponse]:
+    def load_responses(self, run_id: str) -> List[Union[BedrockResponse, EmbeddingResponse]]:
         """Load all responses for a given run."""
         run_path = self._find_run_path(run_id)
         if not run_path:
@@ -177,17 +196,38 @@ class StorageManager:
             for line in f:
                 if line.strip():
                     data = json.loads(line)
-                    response = BedrockResponse(
-                        item_id=data['item_id'],
-                        response_text=data['response_text'],
-                        model_id=data['model_id'],
-                        timestamp=datetime.fromisoformat(data['timestamp']),
-                        latency_ms=data['latency_ms'],
-                        input_tokens=data['input_tokens'],
-                        output_tokens=data['output_tokens'],
-                        finish_reason=data['finish_reason'],
-                        raw_response=data.get('raw_response', {})
-                    )
+                    
+                    # Detect response type from JSON (presence of embedding vs response_text)
+                    if 'embedding' in data:
+                        # Instantiate EmbeddingResponse
+                        response = EmbeddingResponse(
+                            item_id=data['item_id'],
+                            embedding=data['embedding'],
+                            model_id=data['model_id'],
+                            timestamp=datetime.fromisoformat(data['timestamp']),
+                            latency_ms=data['latency_ms'],
+                            input_tokens=data.get('input_tokens'),
+                            raw_response=data.get('raw_response', {}),
+                            is_error=data.get('is_error', False),
+                            error_type=data.get('error_type'),
+                            error_message=data.get('error_message')
+                        )
+                    else:
+                        # Instantiate BedrockResponse
+                        response = BedrockResponse(
+                            item_id=data['item_id'],
+                            response_text=data['response_text'],
+                            model_id=data['model_id'],
+                            timestamp=datetime.fromisoformat(data['timestamp']),
+                            latency_ms=data['latency_ms'],
+                            input_tokens=data['input_tokens'],
+                            output_tokens=data['output_tokens'],
+                            finish_reason=data['finish_reason'],
+                            raw_response=data.get('raw_response', {}),
+                            is_error=data.get('is_error', False),
+                            error_type=data.get('error_type'),
+                            error_message=data.get('error_message')
+                        )
                     responses.append(response)
         
         return responses
@@ -273,20 +313,39 @@ class StorageManager:
         data = []
         for response in responses:
             item = dataset_lookup.get(response.item_id)
-            row = {
-                'run_id': run_id,
-                'item_id': response.item_id,
-                'prompt': item.prompt if item else '',
-                'expected_response': item.expected_response if item else '',
-                'actual_response': response.response_text,
-                'model_id': response.model_id,
-                'system_prompt': run_config.system_prompt if run_config else '',
-                'timestamp': response.timestamp,
-                'latency_ms': response.latency_ms,
-                'input_tokens': response.input_tokens,
-                'output_tokens': response.output_tokens,
-                'finish_reason': response.finish_reason
-            }
+            
+            # Handle EmbeddingResponse objects
+            if isinstance(response, EmbeddingResponse):
+                row = {
+                    'run_id': run_id,
+                    'item_id': response.item_id,
+                    'prompt': item.prompt if item else '',
+                    'expected_response': item.expected_response if item else '',
+                    'embedding': response.embedding,  # Add embedding column
+                    'model_id': response.model_id,
+                    'system_prompt': run_config.system_prompt if run_config else '',
+                    'timestamp': response.timestamp,
+                    'latency_ms': response.latency_ms,
+                    'input_tokens': response.input_tokens,
+                    'output_tokens': None,  # Not applicable for embeddings
+                    'finish_reason': None  # Not applicable for embeddings
+                }
+            else:
+                # Maintain existing columns for BedrockResponse
+                row = {
+                    'run_id': run_id,
+                    'item_id': response.item_id,
+                    'prompt': item.prompt if item else '',
+                    'expected_response': item.expected_response if item else '',
+                    'actual_response': response.response_text,
+                    'model_id': response.model_id,
+                    'system_prompt': run_config.system_prompt if run_config else '',
+                    'timestamp': response.timestamp,
+                    'latency_ms': response.latency_ms,
+                    'input_tokens': response.input_tokens,
+                    'output_tokens': response.output_tokens,
+                    'finish_reason': response.finish_reason
+                }
             
             # Add metadata columns if available
             if item and item.metadata:
@@ -360,18 +419,20 @@ class StorageManager:
         else:
             avg_latency = 0
         
-        total_input_tokens = sum(r.input_tokens for r in responses)
-        total_output_tokens = sum(r.output_tokens for r in responses)
+        total_input_tokens = sum(getattr(r, 'input_tokens', 0) or 0 for r in responses)
+        total_output_tokens = sum(getattr(r, 'output_tokens', 0) or 0 for r in responses)
         
         # Count successful responses (both 'stop' and 'end_turn' are successful completions, exclude errors)
-        successful_responses = sum(1 for r in responses if not getattr(r, 'is_error', False) and r.finish_reason in ['stop', 'end_turn'])
+        # For embeddings, finish_reason doesn't exist, so use getattr with default
+        successful_responses = sum(1 for r in responses if not getattr(r, 'is_error', False) and getattr(r, 'finish_reason', 'success') in ['stop', 'end_turn', 'success'])
         success_rate = successful_responses / total_responses if total_responses > 0 else 0.0
         
-        # Calculate finish_reason statistics
+        # Calculate finish_reason statistics (only for text generation responses)
         finish_reason_counts = {}
         for response in responses:
-            reason = response.finish_reason
-            finish_reason_counts[reason] = finish_reason_counts.get(reason, 0) + 1
+            reason = getattr(response, 'finish_reason', None)
+            if reason:  # Only count if finish_reason exists (text generation)
+                finish_reason_counts[reason] = finish_reason_counts.get(reason, 0) + 1
         
         # Calculate RPM (Requests Per Minute) - simple approach
         if total_responses > 1:
