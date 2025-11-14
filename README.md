@@ -498,30 +498,20 @@ See `examples/README.md` for detailed descriptions.
 
 ## Supported Bedrock Models
 
-The toolkit supports all Amazon Bedrock models via the Converse API:
+### Text Generation Models
+All Amazon Bedrock text generation models are supported via the **Converse API**, including:
+- Anthropic Claude (all versions)
+- Amazon Titan Text models
+- AI21 Labs Jurassic models
+- Cohere Command models
+- Meta Llama models
+- And any other models available through Bedrock's Converse API
 
-### Anthropic Claude Models
-- `anthropic.claude-3-sonnet-20240229-v1:0`
-- `anthropic.claude-3-haiku-20240307-v1:0`
-- `anthropic.claude-3-opus-20240229-v1:0`
-- `anthropic.claude-instant-v1`
-- `anthropic.claude-v2:1`
-
-### Amazon Titan Models
-- `amazon.titan-text-express-v1`
-- `amazon.titan-text-lite-v1`
-
-### AI21 Labs Models
-- `ai21.j2-ultra-v1`
-- `ai21.j2-mid-v1`
-
-### Cohere Models
-- `cohere.command-text-v14`
-- `cohere.command-light-text-v14`
-
-### Meta Llama Models
-- `meta.llama2-13b-chat-v1`
-- `meta.llama2-70b-chat-v1`
+### Embedding Models
+The following embedding models are supported:
+- **Amazon Titan Multimodal Embeddings** (`amazon.titan-embed-image-v1`) - Text, image, and multi-modal
+- **Amazon Nova Multimodal Embeddings** (`amazon.nova-2-multimodal-embeddings-v1:0`) - Text and image
+- **Cohere Embeddings v4** (`us.cohere.embed-v4:0`) - Text, image, and multi-modal
 
 ## Troubleshooting
 
